@@ -18,14 +18,19 @@ class Regression:
     def fonction_base_polynomiale(self, x):
         """
         Fonction de base qui projette la donnee x vers un espace polynomial tel que mentionné au chapitre 3.
-        --> Si x est un scalaire, alors phi_x sera un vecteur de longueur self.M + 1 (incluant le biais) : 
+        --> Si x est un scalaire, alors phi_x sera un vecteur de longueur self.M + 1 (incluant le biais) :
         (1, x^1,x^2,...,x^self.M)
-        --> Si x est un vecteur de N scalaires, alors phi_x sera un tableau 2D de taille Nx(M+1) (incluant le biais)
+        --> Si x est un vecteur de N scalaires, alors phi_x sera un tableau 2D de taille [N,M+1] (incluant le biais)
 
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
-        # AJOUTER CODE ICI
-        phi_x = x
+        # on doit avoir un tableau 20 * 11 | len(x) = 20
+        phi_x = np.zeros(shape=[len(x), self.M+1], dtype=float)
+
+        for i in range(self.M+1):
+            for j in range(20):
+                phi_x[j,i] = np.power(x[j], i)
+
         return phi_x
 
     def recherche_hyperparametre(self, X, t):
@@ -33,15 +38,15 @@ class Regression:
         Trouver la meilleure valeur pour l'hyper-parametre self.M (pour un lambda fixe donné en entrée).
 
         Option 1
-        Validation croisée de type "k-fold" avec k=10. La méthode array_split de numpy peut être utlisée 
-        pour diviser les données en "k" parties. Si le nombre de données en entrée N est plus petit que "k", 
+        Validation croisée de type "k-fold" avec k=10. La méthode array_split de numpy peut être utlisée
+        pour diviser les données en "k" parties. Si le nombre de données en entrée N est plus petit que "k",
         k devient égal à N. Il est important de mélanger les données ("shuffle") avant de les sous-diviser
         en "k" parties.
 
         Option 2
         Sous-échantillonage aléatoire avec ratio 80:20 pour Dtrain et Dvalid, avec un nombre de répétition k=10.
 
-        Note: 
+        Note:
 
         Le resultat est mis dans la variable self.M
 
@@ -62,10 +67,10 @@ class Regression:
         Cette methode doit assigner le champs ``self.w`` au vecteur
         (tableau Numpy 1D) de taille D+1, tel que specifie à la section 3.1.4
         du livre de Bishop.
-        
-        Lorsque using_sklearn=True, vous devez utiliser la classe "Ridge" de 
+
+        Lorsque using_sklearn=True, vous devez utiliser la classe "Ridge" de
         la librairie sklearn (voir http://scikit-learn.org/stable/modules/linear_model.html)
-        
+
         Lorsque using_sklearn=Fasle, vous devez implementer l'equation 3.28 du
         livre de Bishop. Il est suggere que le calcul de ``self.w`` n'utilise
         pas d'inversion de matrice, mais utilise plutôt une procedure
@@ -77,12 +82,25 @@ class Regression:
         NOTE IMPORTANTE : lorsque self.M <= 0, il faut trouver la bonne valeur de self.M
 
         """
-        #AJOUTER CODE ICI
+        # AJOUTER CODE ICI
         if self.M <= 0:
             self.recherche_hyperparametre(X, t)
 
         phi_x = self.fonction_base_polynomiale(X)
-        self.w = [0, 1]
+
+
+        if(not using_sklearn):
+            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
+            b = np.matmul(phi_x.T, phi_x)
+            c = a+b
+            d = np.dot(phi_x.T, t)
+
+            self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
+        else:
+            # linear_model.Ridge(alpha= ???)
+            self.w = [0, 1]
+
+        print("coucou")
 
     def prediction(self, x):
         """
