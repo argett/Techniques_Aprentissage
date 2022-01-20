@@ -40,7 +40,7 @@ def main():
         print("\t lambda: lambda utilisé par le modele de Ridge\n")
         print(" exemple: python3 regression.py 1 sin 20 20 0.3 10 0.001\n")
         return
-    
+
     skl = int(sys.argv[1]) > 0.5
     modele_gen = sys.argv[2]
     nb_train = int(sys.argv[3])

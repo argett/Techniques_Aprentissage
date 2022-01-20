@@ -25,11 +25,11 @@ class Regression:
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
         # on doit avoir un tableau 20 * 11 | len(x) = 20
-        phi_x = np.zeros(shape=[len(x), self.M+1], dtype=float)
+        phi_x = np.zeros(shape=[x.shape[0], self.M+1], dtype=float)
 
         for i in range(self.M+1):
-            for j in range(20):
-                phi_x[j,i] = np.power(x[j], i)
+            for j in range(x.shape[0]):
+                phi_x[j, i] = np.power(x[j], i)
 
         return phi_x
 
@@ -59,8 +59,8 @@ class Regression:
     def entrainement(self, X, t, using_sklearn=False):
         """
         Entraîne la regression lineaire sur l'ensemble d'entraînement forme des
-        entrees ``X`` (un tableau 2D Numpy, ou la n-ieme rangee correspond à l'entree
-        x_n) et des cibles ``t`` (un tableau 1D Numpy ou le
+        entrees ``X`` (un tableau 2D Numpy, ou la n-ieme rangee correspond à
+        l'entree x_n) et des cibles ``t`` (un tableau 1D Numpy ou le
         n-ieme element correspond à la cible t_n). L'entraînement doit
         utiliser le poids de regularisation specifie par ``self.lamb``.
 
@@ -88,16 +88,18 @@ class Regression:
 
         phi_x = self.fonction_base_polynomiale(X)
 
-
         if(not using_sklearn):
             a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
             b = np.matmul(phi_x.T, phi_x)
             c = a+b
+            inv_c = np.linal.solve(c, np.eye(c.shape[0]))
             d = np.dot(phi_x.T, t)
 
-            self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
+            
+            self.w = np.matmul(inv_c, d)
+            #self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
-            # linear_model.Ridge(alpha= ???)
+            linear_model.Ridge(alpha=self.lamb)
             self.w = [0, 1]
 
         print("coucou")
