@@ -92,14 +92,19 @@ class Regression:
             a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
             b = np.matmul(phi_x.T, phi_x)
             c = a+b
-            inv_c = np.linal.solve(c, np.eye(c.shape[0]))
+            inv_c = np.linalg.solve(c, np.eye(c.shape[0]))
             d = np.dot(phi_x.T, t)
 
-            
             self.w = np.matmul(inv_c, d)
-            #self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
+            # self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
-            linear_model.Ridge(alpha=self.lamb)
+            reg = linear_model.Ridge(alpha=self.lamb)
+
+            X = X.reshape(-1, 1)
+            print(X)
+            reg.fit(X, t)
+            print(reg.coef_)
+
             self.w = [0, 1]
 
         print("coucou")
