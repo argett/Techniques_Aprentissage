@@ -7,6 +7,8 @@
 import numpy as np
 import random
 from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 
 class Regression:
@@ -53,8 +55,25 @@ class Regression:
         X: vecteur de donnees
         t: vecteur de cibles
         """
-        # AJOUTER CODE ICI
-        self.M = 1
+        meilleurErr = -1
+        meilleurParam = -1
+        res = []
+        for hyper in range(1,15): # degré du polynôme
+            self.M = hyper
+            X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
+
+            self.entrainement(X_train, y_train)
+            y_hat = self.prediction(X_test)
+
+            if(self.erreur(y_test, y_hat) < meilleurErr):
+                meilleurErr = y_hat
+                meilleurParam = hyper
+            res = self.erreur(y_test, y_hat)
+
+        self.M = meilleurParam
+        plt.plot(res)
+        plt.show()
+
 
     def entrainement(self, X, t, using_sklearn=False):
         """
@@ -101,11 +120,11 @@ class Regression:
             reg = linear_model.Ridge(alpha=self.lamb)
 
             X = X.reshape(-1, 1)
-            print(X)
+            #print(X)
             reg.fit(X, t)
-            print(reg.coef_)
+            #print(reg.coef_)
 
-            self.w = [0, 1]
+            self.w = reg.coef_
 
         print("coucou")
 
@@ -118,8 +137,9 @@ class Regression:
         a prealablement ete appelee. Elle doit utiliser le champs ``self.w``
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
-        # AJOUTER CODE ICI
-        return 0.5
+        #reg.predict(x)
+        h_hat = np.dot(x, self.w.T)
+        return h_hat
 
     @staticmethod
     def erreur(t, prediction):
@@ -127,5 +147,4 @@ class Regression:
         Retourne l'erreur de la difference au carre entre
         la cible ``t`` et la prediction ``prediction``.
         """
-        # AJOUTER CODE ICI
-        return 0.0
+        return np.sum(np.power(t-prediction, 2))

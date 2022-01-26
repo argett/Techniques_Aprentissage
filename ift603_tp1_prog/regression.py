@@ -19,23 +19,38 @@ def warning(erreur_test, erreur_apprentissage, bruit):
     # AJOUTER CODE ICI
 
 ################################
-# Execution en tant que script 
+# Execution en tant que script
 #
 # tapper python3 regression.py 1 sin 20 20 0.3 10 0.001
+# UTILIER LE STANDARD PEP8 -> 120 charactères par lignes max
+#
+# CONTROLE ALT D
+# mettre de nom des auteurs
+# mettre une entête de fonctions --> il ne faut pas que changer les # CODE ICI
+# surtout pas de boucles innutiles
+# utiliser itertools as product pour double boucle
 #
 # dans un terminal
 ################################
 
 
 def main():
-    
-    arg1 = 1 # utilise sk leanr ? T/F
-    arg2 = "sin" # modèle de génération
-    arg3 = 20 # nombre de points bleus
-    arg4 = 20 # nombre de points test
-    arg5 = 0.3 # bruit
-    arg6 = 10 # degré du polynome
-    arg7 = 0.001 # lambda pour modèle de Ridge
+    arg1 = 1   # utilise sk leanr ? T/F
+    arg2 = "sin"  # modèle de génération
+    arg3 = 20  # nombre de points bleus
+    arg4 = 20  # nombre de points test
+    arg5 = 0.3  # bruit
+    arg6 = -1  # degré du polynome
+    arg7 = 0.001  # lambda pour modèle de Ridge
+
+    skl = int(arg1) > 0.5
+    modele_gen = arg2
+    nb_train = int(arg3)
+    nb_test = int(arg4)
+    bruit = float(arg5)
+    m = int(arg6)
+    lamb = float(arg7)
+    w = [0.3, 4.1]  # Parametres du modele generatif
 
     """
     if len(sys.argv) < 8:
@@ -50,29 +65,15 @@ def main():
         print(" exemple: python3 regression.py 1 sin 20 20 0.3 10 0.001\n")
         return
 
-
     skl = int(sys.argv[1]) > 0.5
-    modele_gen = sys.argv[2]
     nb_train = int(sys.argv[3])
+    modele_gen = sys.argv[2]
     nb_test = int(sys.argv[4])
     bruit = float(sys.argv[5])
     m = int(sys.argv[6])
     lamb = float(sys.argv[7])
     w = [0.3, 4.1]  # Parametres du modele generatif
     """
-
-    skl = int(arg1) > 0.5
-    modele_gen = arg2
-    nb_train = int(arg3)
-    nb_test = int(arg4)
-    bruit = float(arg5)
-    m = int(arg6)
-    lamb = float(arg7)
-    w = [0.3, 4.1] # Parametres du modele generatif
-
-
-
-
 
     # Creer le gestionnaire de donnees et generer les donnees d'entraînement et de test
     gestionnaire_donnees = gd.GestionDonnees(w, modele_gen, nb_train, nb_test, bruit)
