@@ -35,7 +35,7 @@ class Regression:
 
         return phi_x
 
-    def recherche_hyperparametre(self, X, t):
+    def recherche_hyperparametre(self, X, t, skl):
         """
         Trouver la meilleure valeur pour l'hyper-parametre self.M (pour un lambda fixe donné en entrée).
 
@@ -62,7 +62,7 @@ class Regression:
             self.M = hyper
             X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
 
-            self.entrainement(X_train, y_train)
+            self.entrainement(X_train, y_train, using_sklearn = skl)
             y_hat = self.prediction(X_test)
 
             if(self.erreur(y_test, y_hat) < meilleurErr):
@@ -103,10 +103,10 @@ class Regression:
         """
         # AJOUTER CODE ICI
         if self.M <= 0:
-            self.recherche_hyperparametre(X, t)
+            self.recherche_hyperparametre(X, t, using_sklearn)
 
         phi_x = self.fonction_base_polynomiale(X)
-
+        #print(using_sklearn)
         if(not using_sklearn):
             a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
             b = np.matmul(phi_x.T, phi_x)
@@ -118,14 +118,16 @@ class Regression:
             # self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
             reg = linear_model.Ridge(alpha=self.lamb)
-
+            print("yo")
+            print(X)
             X = X.reshape(-1, 1)
-            #print(X)
+            
             reg.fit(X, t)
             #print(reg.coef_)
 
             self.w = reg.coef_
-
+        
+        print(self.w)
         print("coucou")
 
     def prediction(self, x):

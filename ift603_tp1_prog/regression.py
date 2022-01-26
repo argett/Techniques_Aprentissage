@@ -44,6 +44,7 @@ def main():
     arg7 = 0.001  # lambda pour modèle de Ridge
 
     skl = int(arg1) > 0.5
+    #print(skl)
     modele_gen = arg2
     nb_train = int(arg3)
     nb_test = int(arg4)
@@ -81,6 +82,7 @@ def main():
 
     # Entrainement du modele de regression
     regression = sr.Regression(lamb, m)
+    print(skl)
     regression.entrainement(x_train, t_train, using_sklearn=skl)
 
     # Predictions sur les ensembles d'entrainement et de test
