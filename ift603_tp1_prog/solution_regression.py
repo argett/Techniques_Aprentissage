@@ -59,6 +59,7 @@ class Regression:
         meilleurParam = -1
         res = []
         for hyper in range(1,15): # degré du polynôme
+            print("anoter iteration ----------------------------")
             self.M = hyper
             X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
 
@@ -71,8 +72,7 @@ class Regression:
             res = self.erreur(y_test, y_hat)
 
         self.M = meilleurParam
-        plt.plot(res)
-        plt.show()
+        
 
 
     def entrainement(self, X, t, using_sklearn=False):
@@ -101,12 +101,17 @@ class Regression:
         NOTE IMPORTANTE : lorsque self.M <= 0, il faut trouver la bonne valeur de self.M
 
         """
+
+        print(f"t: {t}")
+
         # AJOUTER CODE ICI
         if self.M <= 0:
             self.recherche_hyperparametre(X, t, using_sklearn)
 
         phi_x = self.fonction_base_polynomiale(X)
-        #print(using_sklearn)
+
+
+
         if(not using_sklearn):
             a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
             b = np.matmul(phi_x.T, phi_x)
@@ -114,7 +119,7 @@ class Regression:
             inv_c = np.linalg.solve(c, np.eye(c.shape[0]))
             d = np.dot(phi_x.T, t)
 
-            self.w = np.matmul(inv_c, d)
+            self.w = np.dot(inv_c, d)
             # self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
             reg = linear_model.Ridge(alpha=self.lamb)
@@ -128,7 +133,6 @@ class Regression:
             self.w = reg.coef_
         
         print(self.w)
-        print("coucou")
 
     def prediction(self, x):
         """
@@ -140,8 +144,12 @@ class Regression:
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
         #reg.predict(x)
-        h_hat = np.dot(x, self.w.T)
-        return h_hat
+        print("predict")
+        print(x)
+        print(self.w)
+        print(self.fonction_base_polynomiale(x))
+        y_hat = np.sum(np.dot(self.w.T,self.fonction_base_polynomiale(x)))
+        return y_hat
 
     @staticmethod
     def erreur(t, prediction):
