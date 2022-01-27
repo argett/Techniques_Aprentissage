@@ -57,7 +57,7 @@ class Regression:
         """
         meilleurErr = -1
         meilleurParam = -1
-        res = []
+        
         for hyper in range(1,15): # degré du polynôme
             print("anoter iteration ----------------------------")
             self.M = hyper
@@ -69,7 +69,6 @@ class Regression:
             if(self.erreur(y_test, y_hat) < meilleurErr):
                 meilleurErr = y_hat
                 meilleurParam = hyper
-            res = self.erreur(y_test, y_hat)
 
         self.M = meilleurParam
         
@@ -114,7 +113,7 @@ class Regression:
 
         if(not using_sklearn):
             a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
-            b = np.matmul(phi_x.T, phi_x)
+            b = np.dot(phi_x.T, phi_x)
             c = a+b
             inv_c = np.linalg.solve(c, np.eye(c.shape[0]))
             d = np.dot(phi_x.T, t)
@@ -148,7 +147,7 @@ class Regression:
         print(x)
         print(self.w)
         print(self.fonction_base_polynomiale(x))
-        y_hat = np.sum(np.dot(self.w.T,self.fonction_base_polynomiale(x)))
+        y_hat = np.sum(np.dot(self.w,self.fonction_base_polynomiale(x).T   )  ) # BIEN SE REPENCHER SUR LES T ET LES DIMENSIONS
         return y_hat
 
     @staticmethod
