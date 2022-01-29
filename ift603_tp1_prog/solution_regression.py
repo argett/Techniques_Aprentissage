@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
 #####
-# VosNoms (Matricule) .~= À MODIFIER =~.
+#  Eliott THOMAS — 21 164 874
+#  Lilian FAVRE GARCIA — 21 153 421
+#  Tsiory Razafindramisa — 21 145 627
 ###
 
 import numpy as np
-import random
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import PolynomialFeatures
-
 
 
 class Regression:
@@ -29,18 +27,11 @@ class Regression:
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
         # on doit avoir un tableau 20 * 11 | len(x) = 20
-        
-        # poly = PolynomialFeatures(self.M)
-        # x = x.reshape(-1, 1)
-        # phi_x = poly.fit_transform(x)
-        # return phi_x
 
-        if(type(x)==np.float64):
-            
-
+        if(type(x) == np.float64):
             phi_x = np.zeros(shape=self.M+1, dtype=float)
             for i in range(self.M+1):
-                    phi_x[i] = np.power(x,i)
+                phi_x[i] = np.power(x, i)
 
         else:
             phi_x = np.zeros(shape=[x.shape[0], self.M+1], dtype=float)
@@ -73,33 +64,20 @@ class Regression:
         """
         meilleurErr = np.inf
         meilleurParam = -1
-        
-        for hyper in range(1,15): # degré du polynôme
-            # print("anoter iteration ----------------------------")
+
+        for hyper in range(1, 15):  # degré du polynôme
             self.M = hyper
             X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
 
-            self.entrainement(X_train, y_train, using_sklearn = skl)
+            self.entrainement(X_train, y_train, using_sklearn=skl)
 
-            # print("pre")
-            # print(type(X_test))
-            # print(X_test)
             y_hat = self.prediction(X_test)
-
-            # print("post")
-            # print(type(X_test))
-            # print(X_test)
-
-            print(f" Erreur :  {self.erreur(y_test, y_hat)} " )
 
             if(self.erreur(y_test, y_hat) < meilleurErr):
                 meilleurErr = self.erreur(y_test, y_hat)
                 meilleurParam = hyper
 
-        print(meilleurErr)
         self.M = meilleurParam
-        
-
 
     def entrainement(self, X, t, using_sklearn=False):
         """
@@ -128,39 +106,24 @@ class Regression:
 
         """
 
-        #print(f"t: {t}")
-
-        # AJOUTER CODE ICI
         if self.M <= 0:
             self.recherche_hyperparametre(X, t, using_sklearn)
 
-        #print(f" X : {X} et M : {self.M} ")
         phi_x = self.fonction_base_polynomiale(X)
 
-
-
         if(not using_sklearn):
-            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float)) # marche bien avec lambda = 10^-3
+            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))  # marche bien avec lambda = 10^-3
             b = np.dot(phi_x.T, phi_x)
-            c = a+b
-            inv_c = np.linalg.solve(c, np.eye(c.shape[0]))
+            inv_c = np.linalg.solve(a+b, np.eye((a+b).shape[0]))
             d = np.dot(phi_x.T, t)
 
             self.w = np.dot(inv_c, d)
-            # self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
-            reg = linear_model.Ridge(alpha=self.lamb) # marche bien avec lambda = 10^-5
-            # print("yo")
-            # print(X)
-            #X = X.reshape(-1, 1)
-            
-            #reg.fit(X, t)
-            reg.fit(phi_x,t)
-            #print(reg.coef_)
+            reg = linear_model.Ridge(alpha=self.lamb)  # marche bien avec lambda = 10^-5
+
+            reg.fit(phi_x, t)
 
             self.w = reg.coef_
-        
-        # print(self.w)
 
     def prediction(self, x):
         """
@@ -171,15 +134,8 @@ class Regression:
         a prealablement ete appelee. Elle doit utiliser le champs ``self.w``
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
-        #reg.predict(x)
-        # print("predict")
-        # print(type(x))
-        # print(x)
-        # print(self.w)
-        # print(f"M : {self.M}")
-        # print(self.fonction_base_polynomiale(x))
-        y_hat = np.sum(np.dot(self.w,self.fonction_base_polynomiale(x).T   )  ) # BIEN SE REPENCHER SUR LES T ET LES DIMENSIONS
-        return y_hat
+
+        return np.sum(np.dot(self.w, self.fonction_base_polynomiale(x).T))  # BIEN SE REPENCHER SUR LES T ET LES DIMENSIONS
 
     @staticmethod
     def erreur(t, prediction):
@@ -187,5 +143,5 @@ class Regression:
         Retourne l'erreur de la difference au carre entre
         la cible ``t`` et la prediction ``prediction``.
         """
-        
+
         return np.sum(np.power(t-prediction, 2))
