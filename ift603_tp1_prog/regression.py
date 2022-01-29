@@ -40,7 +40,7 @@ def main():
     arg3 = 20  # nombre de points bleus
     arg4 = 20  # nombre de points test
     arg5 = 0.3  # bruit
-    arg6 = 4  # degré du polynome
+    arg6 = -1  # degré du polynome
     arg7 = 0.001  # lambda pour modèle de Ridge
 
     skl = int(arg1) > 0.5

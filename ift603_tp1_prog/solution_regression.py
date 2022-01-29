@@ -75,15 +75,15 @@ class Regression:
         meilleurParam = -1
         
         for hyper in range(1,15): # degré du polynôme
-            print("anoter iteration ----------------------------")
+            # print("anoter iteration ----------------------------")
             self.M = hyper
             X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
 
             self.entrainement(X_train, y_train, using_sklearn = skl)
 
-            print("pre")
-            print(type(X_test))
-            print(X_test)
+            # print("pre")
+            # print(type(X_test))
+            # print(X_test)
             y_hat = self.prediction(X_test)
 
             # print("post")
@@ -93,9 +93,10 @@ class Regression:
             print(f" Erreur :  {self.erreur(y_test, y_hat)} " )
 
             if(self.erreur(y_test, y_hat) < meilleurErr):
-                meilleurErr = y_hat
+                meilleurErr = self.erreur(y_test, y_hat)
                 meilleurParam = hyper
 
+        print(meilleurErr)
         self.M = meilleurParam
         
 
@@ -158,7 +159,7 @@ class Regression:
 
             self.w = reg.coef_
         
-        print(self.w)
+        # print(self.w)
 
     def prediction(self, x):
         """
