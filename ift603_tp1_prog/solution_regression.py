@@ -140,7 +140,7 @@ class Regression:
 
 
         if(not using_sklearn):
-            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))
+            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float)) # marche bien avec lambda = 10^-3
             b = np.dot(phi_x.T, phi_x)
             c = a+b
             inv_c = np.linalg.solve(c, np.eye(c.shape[0]))
@@ -149,12 +149,13 @@ class Regression:
             self.w = np.dot(inv_c, d)
             # self.w = np.matmul(np.linalg.matrix_power(c, -1), d)
         else:
-            reg = linear_model.Ridge(alpha=self.lamb)
+            reg = linear_model.Ridge(alpha=self.lamb) # marche bien avec lambda = 10^-5
             # print("yo")
             # print(X)
-            X = X.reshape(-1, 1)
+            #X = X.reshape(-1, 1)
             
-            reg.fit(X, t)
+            #reg.fit(X, t)
+            reg.fit(phi_x,t)
             #print(reg.coef_)
 
             self.w = reg.coef_
