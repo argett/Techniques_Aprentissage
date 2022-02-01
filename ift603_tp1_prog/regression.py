@@ -35,8 +35,8 @@ def warning(erreur_test, erreur_apprentissage, bruit):
 
 
 def main():
-    arg1 = 0  # utilise sk leanr ? T/F
-    arg2 = "sin"  # modèle de génération
+    arg1 = 1  # utilise sk leanr ? T/F
+    arg2 = "tanh"  # modèle de génération
     arg3 = 20  # nombre de points bleus
     arg4 = 20  # nombre de points test
     arg5 = 0.3  # bruit

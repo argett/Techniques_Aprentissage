@@ -9,6 +9,7 @@
 import numpy as np
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
+from itertools import product
 
 
 class Regression:
@@ -16,6 +17,7 @@ class Regression:
         self.lamb = lamb
         self.w = None
         self.M = m
+        self.inter = 0
 
     def fonction_base_polynomiale(self, x):
         """
@@ -26,19 +28,15 @@ class Regression:
 
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
-        # on doit avoir un tableau 20 * 11 | len(x) = 20
 
         if(type(x) == np.float64):
-            phi_x = np.zeros(shape=self.M+1, dtype=float)
-            for i in range(self.M+1):
-                phi_x[i] = np.power(x, i)
+            phi_x = np.array([np.power(x, i) for i in range(self.M+1)])
 
         else:
             phi_x = np.zeros(shape=[x.shape[0], self.M+1], dtype=float)
 
-            for i in range(self.M+1):
-                for j in range(x.shape[0]):
-                    phi_x[j, i] = np.power(x[j], i)
+            for i, j in product(range(self.M+1), range(x.shape[0])):
+                phi_x[j, i] = np.power(x[j], i)
 
         return phi_x
 
@@ -67,14 +65,18 @@ class Regression:
 
         for hyper in range(1, 15):  # degré du polynôme
             self.M = hyper
-            X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=hyper, shuffle=True)
+            sumError = 0
 
-            self.entrainement(X_train, y_train, using_sklearn=skl)
+            for k in range(10):
+                X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=k, shuffle=True)
+                self.entrainement(X_train, y_train, using_sklearn=skl)
+                y_hat = self.prediction(X_test)
+                sumError += self.erreur(y_test, y_hat)
 
-            y_hat = self.prediction(X_test)
+            avg_err_locale = sumError/(k+1)
 
-            if(self.erreur(y_test, y_hat) < meilleurErr):
-                meilleurErr = self.erreur(y_test, y_hat)
+            if(avg_err_locale < meilleurErr):
+                meilleurErr = avg_err_locale
                 meilleurParam = hyper
 
         self.M = meilleurParam
@@ -116,13 +118,12 @@ class Regression:
             b = np.dot(phi_x.T, phi_x)
             inv_c = np.linalg.solve(a+b, np.eye((a+b).shape[0]))
             d = np.dot(phi_x.T, t)
-
             self.w = np.dot(inv_c, d)
+
         else:
             reg = linear_model.Ridge(alpha=self.lamb)  # marche bien avec lambda = 10^-5
-
             reg.fit(phi_x, t)
-
+            self.inter = reg.intercept_
             self.w = reg.coef_
 
     def prediction(self, x):
@@ -135,7 +136,7 @@ class Regression:
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
 
-        return np.sum(np.dot(self.w, self.fonction_base_polynomiale(x).T))  # BIEN SE REPENCHER SUR LES T ET LES DIMENSIONS
+        return np.sum(np.dot(self.w, self.fonction_base_polynomiale(x).T)) + self.inter
 
     @staticmethod
     def erreur(t, prediction):
