@@ -16,8 +16,13 @@ def warning(erreur_test, erreur_apprentissage, bruit):
     erreur_apprentissage: erreur obtenue sur l'ensemble d'apprentissage
     bruit: magnitude du bruit
     """
-    if()
-    # AJOUTER CODE ICI
+    if(erreur_apprentissage < bruit and erreur_test > (1+bruit) * erreur_apprentissage): 
+        # On vérifie que l'erreur d'entrainement est petite alors que l'erreur de test est grande
+        print("SUR APPRENTISSAGE")
+
+    elif(erreur_apprentissage >= bruit and erreur_apprentissage >= bruit):
+        # On vérifie que les erreurs de tests et d'entrainement sont grandes.
+        print("SOUS APPRENTISSAGE")
 
 ################################
 # Execution en tant que script
@@ -38,14 +43,13 @@ def warning(erreur_test, erreur_apprentissage, bruit):
 def main():
     arg1 = 0  # utilise sk leanr ? T/F
     arg2 = "sin"  # modèle de génération
-    arg3 = 50  # nombre de points bleus
-    arg4 = 50  # nombre de points test
+    arg3 = 20  # nombre de points bleus
+    arg4 = 20  # nombre de points test
     arg5 = 0.3  # bruit
     arg6 = -1  # degré du polynome
     arg7 = 0.001  # lambda pour modèle de Ridge
 
     skl = int(arg1) > 0.5
-    #print(skl)
     modele_gen = arg2
     nb_train = int(arg3)
     nb_test = int(arg4)
@@ -111,6 +115,7 @@ def main():
     else:
         plt.suptitle('Resultat AVEC recherche d\'hyperparametres')
     plt.show()
+
 
 if __name__ == "__main__":
     main()

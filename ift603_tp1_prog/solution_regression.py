@@ -29,7 +29,7 @@ class Regression:
         NOTE : En mettant phi_x = x, on a une fonction de base lineaire qui fonctionne pour une regression lineaire
         """
 
-        if(type(x) == np.float64):
+        if(type(x) == np.float64):  # on regarde si l'entree est un vecteur ou un scalaire
             phi_x = np.array([np.power(x, i) for i in range(0, self.M+1)])
 
         else:
@@ -60,28 +60,28 @@ class Regression:
         X: vecteur de donnees
         t: vecteur de cibles
         """
-        meilleurErr = np.inf
-        meilleurParam = -1
-        num_fold = 7
-        for hyper in range(1, 15):  # degré du polynôme
+        meilleur_err = np.inf
+        meilleur_param = -1
+        num_fold = 10
+        for hyper in range(1, 25):  # On teste plusieurs degrés du polynôme
             self.M = hyper
-            sumError = 0
+            sum_error = 0
 
-            for k in range(num_fold):
+            for k in range(num_fold):  # K-fold validation (Option 2)
+                # random_state=k pour avoir les mêmes echantillons de données à chaque M différent testé.
+                # Le professeur nous a autorisé à utiliser la fonction train_test_split ci-dessous.
                 X_train, X_val, y_train, y_val = train_test_split(X, t, test_size=0.2, random_state=k, shuffle=True)
                 self.entrainement(X_train, y_train, using_sklearn=skl)
-                y_hat = self.prediction(X_val)
-                sumError += np.sum(self.erreur(y_val, y_hat))
+                y_hat = self.prediction(X_val)  # vecteur de prédiction
+                sum_error += np.sum(self.erreur(y_val, y_hat))
 
-            
-            avg_err_locale = sumError/(num_fold)
-            #print(avg_err_locale)
-            if(avg_err_locale < meilleurErr):
-                meilleurErr = avg_err_locale
-                meilleurParam = hyper
+            avg_err_locale = sum_error/(num_fold)  # On regarde la moyenne des erreurs sur le K-fold  
+            if(avg_err_locale < meilleur_err):
+                meilleur_err = avg_err_locale
+                meilleur_param = hyper
 
-        self.M = meilleurParam
-        print(self.M)
+        self.M = meilleur_param
+        print(f"Meilleur paramètre choisi = {self.M}")
 
     def entrainement(self, X, t, using_sklearn=False):
         """
@@ -109,32 +109,27 @@ class Regression:
         NOTE IMPORTANTE : lorsque self.M <= 0, il faut trouver la bonne valeur de self.M
 
         """
-
-        if self.M <= 0:
+        if self.M <= 0:  # On regarde s'il faut faire la recherche d'hyperparamètre
             self.recherche_hyperparametre(X, t, using_sklearn)
-            print(self.M)
 
-
-        
         phi_x = self.fonction_base_polynomiale(X)
 
         if(not using_sklearn):
-            a = np.dot(self.lamb, np.identity(self.M+1))  # marche bien avec lambda = 10^-3
+            # Calculs basé sur le livre Bishop
+            a = np.dot(self.lamb, np.identity(self.M+1))
             b = np.dot(phi_x.T, phi_x)
             inv_c = np.linalg.solve(a+b, np.eye((a+b).shape[0]))
             d = np.dot(phi_x.T, t)
             self.w = np.dot(inv_c, d)
 
         else:
-            reg = linear_model.Ridge(alpha=self.lamb)  # marche bien avec lambda = 10^-5
+            # Calculs basé sur scikit-learn.org
+            reg = linear_model.Ridge(alpha=self.lamb)
             reg.fit(phi_x, t)
-            #self.inter = reg.intercept_
             self.w = reg.coef_
-            # self.w = np.insert(futurw,0,reg.intercept_)
-            #self.w = reg.intercept_.append()
-
-            self.w[0]  = reg.intercept_
-
+            # Le premier coefficient de reg.coef_ est toujours égal à 0.
+            # On le remplace par reg.intercept_
+            self.w[0] = reg.intercept_
 
     def prediction(self, x):
         """
@@ -147,9 +142,7 @@ class Regression:
         """
 
         fct = self.fonction_base_polynomiale(x)
-        
-        return np.dot(self.w, fct.T)  # + self.inter
-
+        return np.dot(self.w, fct.T)
 
     @staticmethod
     def erreur(t, prediction):
@@ -158,6 +151,4 @@ class Regression:
         la cible ``t`` et la prediction ``prediction``.
         """
 
-        #return np.sum(np.power(t-prediction, 2))
         return np.power(t-prediction, 2)
-
