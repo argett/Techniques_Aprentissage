@@ -30,7 +30,7 @@ class Regression:
         """
 
         if(type(x) == np.float64):
-            phi_x = np.array([np.power(x, i) for i in range(self.M+1)])
+            phi_x = np.array([np.power(x, i) for i in range(0, self.M+1)])
 
         else:
             phi_x = np.zeros(shape=[x.shape[0], self.M+1], dtype=float)
@@ -62,24 +62,26 @@ class Regression:
         """
         meilleurErr = np.inf
         meilleurParam = -1
-
-        for hyper in range(1, 15):  # degré du polynôme
+        num_fold = 7
+        for hyper in range(1, 25):  # degré du polynôme
             self.M = hyper
             sumError = 0
 
-            for k in range(10):
-                X_train, X_test, y_train, y_test = train_test_split(X, t, test_size=0.2, random_state=k, shuffle=True)
+            for k in range(num_fold):
+                X_train, X_val, y_train, y_val = train_test_split(X, t, test_size=0.2, random_state=k, shuffle=True)
                 self.entrainement(X_train, y_train, using_sklearn=skl)
-                y_hat = self.prediction(X_test)
-                sumError += self.erreur(y_test, y_hat)
+                y_hat = self.prediction(X_val)
+                sumError += np.sum(self.erreur(y_val, y_hat))
 
-            avg_err_locale = sumError/(k+1)
-
+            
+            avg_err_locale = sumError/(num_fold)
+            #print(avg_err_locale)
             if(avg_err_locale < meilleurErr):
                 meilleurErr = avg_err_locale
                 meilleurParam = hyper
 
         self.M = meilleurParam
+        print(self.M)
 
     def entrainement(self, X, t, using_sklearn=False):
         """
@@ -110,11 +112,14 @@ class Regression:
 
         if self.M <= 0:
             self.recherche_hyperparametre(X, t, using_sklearn)
+            print(self.M)
 
+
+        
         phi_x = self.fonction_base_polynomiale(X)
 
         if(not using_sklearn):
-            a = np.dot(self.lamb, np.identity(self.M+1, dtype=float))  # marche bien avec lambda = 10^-3
+            a = np.dot(self.lamb, np.identity(self.M+1))  # marche bien avec lambda = 10^-3
             b = np.dot(phi_x.T, phi_x)
             inv_c = np.linalg.solve(a+b, np.eye((a+b).shape[0]))
             d = np.dot(phi_x.T, t)
@@ -123,8 +128,13 @@ class Regression:
         else:
             reg = linear_model.Ridge(alpha=self.lamb)  # marche bien avec lambda = 10^-5
             reg.fit(phi_x, t)
-            self.inter = reg.intercept_
+            #self.inter = reg.intercept_
             self.w = reg.coef_
+            # self.w = np.insert(futurw,0,reg.intercept_)
+            #self.w = reg.intercept_.append()
+
+            self.w[0]  = reg.intercept_
+
 
     def prediction(self, x):
         """
@@ -136,7 +146,10 @@ class Regression:
         afin de calculer la prediction y(x,w) (equation 3.1 et 3.3).
         """
 
-        return np.sum(np.dot(self.w, self.fonction_base_polynomiale(x).T)) + self.inter
+        fct = self.fonction_base_polynomiale(x)
+        
+        return np.dot(self.w, fct.T)  
+
 
     @staticmethod
     def erreur(t, prediction):
@@ -144,5 +157,5 @@ class Regression:
         Retourne l'erreur de la difference au carre entre
         la cible ``t`` et la prediction ``prediction``.
         """
+        return np.power(t-prediction, 2)
 
-        return np.sum(np.power(t-prediction, 2))

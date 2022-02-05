@@ -16,6 +16,7 @@ def warning(erreur_test, erreur_apprentissage, bruit):
     erreur_apprentissage: erreur obtenue sur l'ensemble d'apprentissage
     bruit: magnitude du bruit
     """
+    #if()
     # AJOUTER CODE ICI
 
 ################################
@@ -35,10 +36,10 @@ def warning(erreur_test, erreur_apprentissage, bruit):
 
 
 def main():
-    arg1 = 1  # utilise sk leanr ? T/F
-    arg2 = "tanh"  # modèle de génération
-    arg3 = 20  # nombre de points bleus
-    arg4 = 20  # nombre de points test
+    arg1 = 0  # utilise sk leanr ? T/F
+    arg2 = "sin"  # modèle de génération
+    arg3 = 50  # nombre de points bleus
+    arg4 = 50  # nombre de points test
     arg5 = 0.3  # bruit
     arg6 = -1  # degré du polynome
     arg7 = 0.001  # lambda pour modèle de Ridge
