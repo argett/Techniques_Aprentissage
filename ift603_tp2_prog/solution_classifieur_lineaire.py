@@ -64,7 +64,47 @@ class ClassifieurLineaire:
         """
         if self.methode == 1:  # Classification generative
             print('Classification generative')
-            # AJOUTER CODE ICI
+
+            N1 = np.sum([1 for k in t_train if k == 1])
+            N2 = np.sum([1 for k in t_train if k == 0])
+
+            p = N1/(N1+N2)
+
+            elementsC1 = [x_train[indice]*t_train[indice] for indice in range(len(x_train))]
+            elementsC2 = [x_train[indice]*(1-t_train[indice]) for indice in range(len(x_train))]
+
+            # Moyennes
+            mu_1 = (1/N1) * np.sum(elementsC1,axis=0)
+
+            mu_2 = (1/N2) * np.sum(elementsC2,axis=0)
+
+
+            """
+            Pour les sigmas individuels, ne faut t il pas diviser par n-1 pour eviter le biais ?
+            """
+
+            # Ecarts types
+            print("sigma")
+            
+
+            cols1 = [ np.reshape(elementsC1[k]-mu_1 , (-1, 1)) for k in range(len(x_train))       ]
+            cols2 = [ np.reshape(elementsC2[k]-mu_2 , (-1, 1)) for k in range(len(x_train))       ]
+
+
+            inter1 = np.array([ np.dot(cols1[k], cols1[k].T)   for k  in range(len(x_train)) ])
+            inter2 = np.array([ np.dot(cols2[k], cols2[k].T)   for k  in range(len(x_train)) ])
+
+            S1 = (1/N1)* np.sum( inter1,axis=0 )
+
+            S2 = (1/N2)* np.sum(inter2,axis=0)
+
+            # ne pas oublier la diagonale 
+
+
+
+
+
+
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
