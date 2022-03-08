@@ -91,7 +91,7 @@ class ClassifieurLineaire:
 
             S1 = (1/N1)* np.sum(intermediate1,axis=0)
             S2 = (1/N2)* np.sum(intermediate2,axis=0)
-            S = N1/(N1+N2)*S1 + N2/(N1+N2)*S2
+            S = p*S1 + (1-p)*S2
             S += np.identity(intermediate1.shape[1]) * self.lamb # ne pas oublier la diagonale 
             inv_S = np.linalg.solve(S, np.eye((S).shape[0]))
             self.w = inv_S.dot(mu_1 - mu_2)
@@ -100,7 +100,7 @@ class ClassifieurLineaire:
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             eta = 0.001
-            for iteration in range(5000):
+            for iteration in range(1000):
                 for x_i, t_i in zip(x_train, t_train):
                     score = self.prediction(x_i)
                         
@@ -110,7 +110,7 @@ class ClassifieurLineaire:
             
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
-            clf = Perceptron(tol=1e-3, random_state=42)
+            clf = Perceptron(tol=1e-3, random_state=42, penalty='l2')
             clf.fit(x_train, t_train)
             w = clf.coef_
             w0 = clf.intercept_
