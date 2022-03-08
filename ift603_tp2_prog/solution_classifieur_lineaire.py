@@ -99,8 +99,15 @@ class ClassifieurLineaire:
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
-            # AJOUTER CODE ICI
-
+            eta = 0.001
+            for iteration in range(5000):
+                for x_i, t_i in zip(x_train, t_train):
+                    score = self.prediction(x_i)
+                        
+                    error = t_i - score
+                    self.w_0 += error * eta
+                    self.w += error * eta * x_i
+            
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
             clf = Perceptron(tol=1e-3, random_state=42)
@@ -123,8 +130,13 @@ class ClassifieurLineaire:
         a préalablement été appelée. Elle doit utiliser les champs ``self.w``
         et ``self.w_0`` afin de faire cette classification.
         """
-        # AJOUTER CODE ICI
-        return 0
+        xT = x.reshape(-1,1)
+        score = np.matmul(self.w, xT) + self.w_0
+        
+        if score > 0:
+            return 1 
+        else:
+            return 0
 
     @staticmethod
     def erreur(t, prediction):
