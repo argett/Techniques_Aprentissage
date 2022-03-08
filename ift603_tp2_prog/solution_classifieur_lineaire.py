@@ -24,7 +24,7 @@ class ClassifieurLineaire:
                         2 pour Perceptron
                         3 pour Perceptron sklearn
         """
-        self.w = np.array([1., 2.]) # paramètre aléatoire
+        self.w = np.array([1., 2.])  # paramètre aléatoire
         self.w_0 = -5.              # paramètre aléatoire
         self.lamb = lamb
         self.methode = methode
@@ -72,28 +72,28 @@ class ClassifieurLineaire:
             N2 = np.count_nonzero(t_train == 0)
 
             p = N1/(N1+N2)
-            
+
             elementsC1 = x_train[np.where(t_train == 1)]
             elementsC2 = x_train[np.where(t_train == 0)]
 
             # Moyennes
-            mu_1 = (1/N1) * np.sum(elementsC1,axis=0)
-            mu_2 = (1/N2) * np.sum(elementsC2,axis=0)
-            
-            cols1 = [ np.reshape(elementsC1[k]-mu_1 , (-1, 1)) for k in range(len(elementsC1))]
-            cols2 = [ np.reshape(elementsC2[k]-mu_2 , (-1, 1)) for k in range(len(elementsC2))]
+            mu_1 = (1/N1) * np.sum(elementsC1, axis=0)
+            mu_2 = (1/N2) * np.sum(elementsC2, axis=0)
 
-            intermediate1 = np.array([ np.dot(cols1[k], cols1[k].T) for k  in range(len(cols1)) ])
-            intermediate2 = np.array([ np.dot(cols2[k], cols2[k].T) for k  in range(len(cols2)) ])
-             
-            S1 = (1/N1)* np.sum(intermediate1,axis=0)
-            S2 = (1/N2)* np.sum(intermediate2,axis=0)
-            
+            cols1 = [np.reshape(elementsC1[k] - mu_1, (-1, 1)) for k in range(len(elementsC1))]
+            cols2 = [np.reshape(elementsC2[k] - mu_2, (-1, 1)) for k in range(len(elementsC2))]
+
+            intermediate1 = np.array([np.dot(cols1[k], cols1[k].T) for k in range(len(cols1))])
+            intermediate2 = np.array([np.dot(cols2[k], cols2[k].T) for k in range(len(cols2))])
+
+            S1 = (1/N1) * np.sum(intermediate1, axis=0)
+            S2 = (1/N2) * np.sum(intermediate2, axis=0)
+
             S = p*S1 + (1-p)*S2
-            S += np.identity(intermediate1.shape[1]) * self.lamb # ne pas oublier la diagonale 
-            
+            S += np.identity(intermediate1.shape[1]) * self.lamb  # ne pas oublier la diagonale
+
             inv_S = np.linalg.solve(S, np.eye((S).shape[0]))
-            
+
             self.w = inv_S.dot(mu_1 - mu_2)
             self.w_0 = -0.5*(mu_1.T)@inv_S@mu_1 + 0.5*(mu_2.T)@inv_S@mu_2 + np.log(N1/N2)
 
@@ -105,14 +105,14 @@ class ClassifieurLineaire:
                 error = t_i - score
                 self.w_0 += error * eta
                 self.w += error * eta * x_i
-            
+
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
             clf = Perceptron(tol=1e-3, random_state=42, penalty='l2')
             clf.fit(x_train, t_train, coef_init=self.w, intercept_init=self.w_0)
             w = clf.coef_
             w0 = clf.intercept_
-            self.w  = w[0]
+            self.w = w[0]
             self.w_0 = w0[0]
 
         print('w = ', self.w, 'w_0 = ', self.w_0, '\n')
@@ -128,11 +128,11 @@ class ClassifieurLineaire:
         a préalablement été appelée. Elle doit utiliser les champs ``self.w``
         et ``self.w_0`` afin de faire cette classification.
         """
-        xT = x.reshape(-1,1)
+        xT = x.reshape(-1, 1)
         score = np.matmul(self.w, xT) + self.w_0
-        
+
         if score > 0:
-            return 1 
+            return 1
         else:
             return 0
 
@@ -147,7 +147,7 @@ class ClassifieurLineaire:
         # donc on n'a pas réellement pu tester la véracité des résultats
         # Nous en avons parlé avec Martin Valière et ce dernier nous a dit
         # qu'il était au courant de ce problème
-        if t == prediction :
+        if t == prediction:
             return 1
         return 0
 
