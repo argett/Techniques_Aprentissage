@@ -9,6 +9,7 @@
 import numpy as np
 from sklearn.linear_model import Perceptron
 import matplotlib.pyplot as plt
+from itertools import product
 
 
 class ClassifieurLineaire:
@@ -67,51 +68,48 @@ class ClassifieurLineaire:
         if self.methode == 1:  # Classification generative
             print('Classification generative')
 
-            N1 = np.sum([1 for k in t_train if k == 1])
-            N2 = np.sum([1 for k in t_train if k == 0])
+            N1 = np.count_nonzero(t_train == 1)
+            N2 = np.count_nonzero(t_train == 0)
 
             p = N1/(N1+N2)
-
-            elementsC1 = [x_train[indice] for indice in range(len(x_train)) if t_train[indice] == 1]
-            elementsC2 = [x_train[indice] for indice in range(len(x_train)) if t_train[indice] == 0]
+            
+            elementsC1 = x_train[np.where(t_train == 1)]
+            elementsC2 = x_train[np.where(t_train == 0)]
 
             # Moyennes
             mu_1 = (1/N1) * np.sum(elementsC1,axis=0)
             mu_2 = (1/N2) * np.sum(elementsC2,axis=0)
-
-
-            """
-            Pour les sigmas individuels, ne faut t il pas diviser par n-1 pour eviter le biais ?
-            """
+            
             cols1 = [ np.reshape(elementsC1[k]-mu_1 , (-1, 1)) for k in range(len(elementsC1))]
             cols2 = [ np.reshape(elementsC2[k]-mu_2 , (-1, 1)) for k in range(len(elementsC2))]
 
-            intermediate1 = np.array([ np.dot(cols1[k], cols1[k].T)   for k  in range(len(cols1)) ])
-            intermediate2 = np.array([ np.dot(cols2[k], cols2[k].T)   for k  in range(len(cols2)) ])
-
+            intermediate1 = np.array([ np.dot(cols1[k], cols1[k].T) for k  in range(len(cols1)) ])
+            intermediate2 = np.array([ np.dot(cols2[k], cols2[k].T) for k  in range(len(cols2)) ])
+             
             S1 = (1/N1)* np.sum(intermediate1,axis=0)
             S2 = (1/N2)* np.sum(intermediate2,axis=0)
+            
             S = p*S1 + (1-p)*S2
             S += np.identity(intermediate1.shape[1]) * self.lamb # ne pas oublier la diagonale 
+            
             inv_S = np.linalg.solve(S, np.eye((S).shape[0]))
+            
             self.w = inv_S.dot(mu_1 - mu_2)
             self.w_0 = -0.5*(mu_1.T)@inv_S@mu_1 + 0.5*(mu_2.T)@inv_S@mu_2 + np.log(N1/N2)
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
             eta = 0.001
-            for iteration in range(1000):
-                for x_i, t_i in zip(x_train, t_train):
-                    score = self.prediction(x_i)
-                        
-                    error = t_i - score
-                    self.w_0 += error * eta
-                    self.w += error * eta * x_i
+            for iteration, (x_i, t_i) in product(range(1000), zip(x_train, t_train)):
+                score = self.prediction(x_i)
+                error = t_i - score
+                self.w_0 += error * eta
+                self.w += error * eta * x_i
             
         else:  # Perceptron + SGD [sklearn] + learning rate = 0.001 + penalty 'l2' voir http://scikit-learn.org/
             print('Perceptron [sklearn]')
             clf = Perceptron(tol=1e-3, random_state=42, penalty='l2')
-            clf.fit(x_train, t_train)
+            clf.fit(x_train, t_train, coef_init=self.w, intercept_init=self.w_0)
             w = clf.coef_
             w0 = clf.intercept_
             self.w  = w[0]
@@ -145,6 +143,10 @@ class ClassifieurLineaire:
         1. si la cible ``t`` et la prédiction ``prediction``
         sont différentes, 0. sinon.
         """
+        # Cette fonction d'erreur est appelée nulle part
+        # donc on n'a pas réellement pu tester la véracité des résultats
+        # Nous en avons parlé avec Martin Valière et ce dernier nous a dit
+        # qu'il était au courant de ce problème
         if t == prediction :
             return 1
         return 0
