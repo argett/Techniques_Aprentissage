@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 #####
-# Vos Noms (VosMatricules) .~= À MODIFIER =~.
-####
+#  Eliott THOMAS — 21 164 874
+#  Lilian FAVRE GARCIA — 21 153 421
+#  Tsiory Razafindramisa — 21 145 627
+###
 
 import numpy as np
 from sklearn.linear_model import Perceptron
@@ -70,41 +72,30 @@ class ClassifieurLineaire:
 
             p = N1/(N1+N2)
 
-            elementsC1 = [x_train[indice]*t_train[indice] for indice in range(len(x_train))]
-            elementsC2 = [x_train[indice]*(1-t_train[indice]) for indice in range(len(x_train))]
+            elementsC1 = [x_train[indice] for indice in range(len(x_train)) if t_train[indice] == 1]
+            elementsC2 = [x_train[indice] for indice in range(len(x_train)) if t_train[indice] == 0]
 
             # Moyennes
             mu_1 = (1/N1) * np.sum(elementsC1,axis=0)
-
             mu_2 = (1/N2) * np.sum(elementsC2,axis=0)
 
 
             """
             Pour les sigmas individuels, ne faut t il pas diviser par n-1 pour eviter le biais ?
             """
+            cols1 = [ np.reshape(elementsC1[k]-mu_1 , (-1, 1)) for k in range(len(elementsC1))]
+            cols2 = [ np.reshape(elementsC2[k]-mu_2 , (-1, 1)) for k in range(len(elementsC2))]
 
-            # Ecarts types
-            print("sigma")
-            
+            intermediate1 = np.array([ np.dot(cols1[k], cols1[k].T)   for k  in range(len(cols1)) ])
+            intermediate2 = np.array([ np.dot(cols2[k], cols2[k].T)   for k  in range(len(cols2)) ])
 
-            cols1 = [ np.reshape(elementsC1[k]-mu_1 , (-1, 1)) for k in range(len(x_train))       ]
-            cols2 = [ np.reshape(elementsC2[k]-mu_2 , (-1, 1)) for k in range(len(x_train))       ]
-
-
-            inter1 = np.array([ np.dot(cols1[k], cols1[k].T)   for k  in range(len(x_train)) ])
-            inter2 = np.array([ np.dot(cols2[k], cols2[k].T)   for k  in range(len(x_train)) ])
-
-            S1 = (1/N1)* np.sum( inter1,axis=0 )
-
-            S2 = (1/N2)* np.sum(inter2,axis=0)
-
-            # ne pas oublier la diagonale 
-
-
-
-
-
-
+            S1 = (1/N1)* np.sum(intermediate1,axis=0)
+            S2 = (1/N2)* np.sum(intermediate2,axis=0)
+            S = N1/(N1+N2)*S1 + N2/(N1+N2)*S2
+            S += np.identity(intermediate1.shape[1]) * self.lamb # ne pas oublier la diagonale 
+            inv_S = np.linalg.solve(S, np.eye((S).shape[0]))
+            self.w = inv_S.dot(mu_1 - mu_2)
+            self.w_0 = -0.5*(mu_1.T)@inv_S@mu_1 + 0.5*(mu_2.T)@inv_S@mu_2 + np.log(N1/N2)
 
         elif self.methode == 2:  # Perceptron + SGD, learning rate = 0.001, nb_iterations_max = 1000
             print('Perceptron')
