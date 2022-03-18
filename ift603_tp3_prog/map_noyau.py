@@ -6,7 +6,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
+from sklearn.model_selection import GridSearchCV # import ajouté
+import math # import ajouté
 
 class MAPnoyau:
     def __init__(self, lamb=0.2, sigma_square=1.06, b=1.0, c=0.1, d=1.0, M=2, noyau='rbf'):
@@ -50,17 +53,34 @@ class MAPnoyau:
         l'equation 6.8 du livre de Bishop et garder en mémoire les données
         d'apprentissage dans ``self.x_train``
         """
+        # Gram matrix
+        K = None
         if self.noyau == "rbf":
-            print("rbf")
+            tempA = np.zeros(shape=(x_train.shape[0],x_train.shape[0]), dtype=float)
+            
+            # TODO : optimiser
+            
+            for i in range(x_train.shape[0]):
+                for j in range(x_train.shape[0]):
+                    tempB = x_train[i] - x_train[j]
+                    tempA[i,j] = -(np.square(tempB[0]) + np.square(tempB[1])) / (2 * self.sigma_square)
+                    
+            K = np.exp(tempA)
+            
         elif self.noyau == "lineaire":
-            k = x_train.T@x_train
+            K = x_train@x_train.T
+            
         elif self.noyau == "sigmoidal":
-            print("sigmoidal")
+            K = math.tanh(self.b * (x_train@x_train.T) + self.d)
+            
         elif self.noyau == "polynomial":
-            print("polynomial")
+            K = np.power(((x_train@x_train.T) + self.c),self.M)
+            
         else:
-            print("\nMauvais noyau rentré")
-            break
+            print("\nMauvais noyau entré comme paramètre")
+            sys.exit(1)
+        
+        self.a = np.linalg.solve(K + (np.identity(x_train.shape[0]) * self.lamb), np.identity(x_train.shape[0]))@t_train
         
     def prediction(self, x):
         """
