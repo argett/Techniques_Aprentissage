@@ -53,6 +53,7 @@ class MAPnoyau:
         l'equation 6.8 du livre de Bishop et garder en mémoire les données
         d'apprentissage dans ``self.x_train``
         """
+        self.x_train = x_train
         # Gram matrix
         K = None
         if self.noyau == "rbf":
@@ -71,7 +72,7 @@ class MAPnoyau:
             K = x_train@x_train.T
             
         elif self.noyau == "sigmoidal":
-            K = math.tanh(self.b * (x_train@x_train.T) + self.d)
+            K = np.tanh(self.b * (x_train@x_train.T) + self.d)
             
         elif self.noyau == "polynomial":
             K = np.power(((x_train@x_train.T) + self.c),self.M)
@@ -95,8 +96,33 @@ class MAPnoyau:
         classification binaire, la prediction est +1 lorsque y(x)>0.5 et 0
         sinon
         """
-        #AJOUTER CODE ICI
-        return 0
+        k = None
+        if self.noyau == "rbf":
+            tempA = np.zeros(shape=(self.x_train.shape[0]), dtype=float)
+            
+            # TODO : optimiser
+            
+            for i in range(self.x_train.shape[0]):
+                tempB = self.x_train[i] - x
+                tempA[i] = -(np.square(tempB[0]) + np.square(tempB[1])) / (2 * self.sigma_square)
+                    
+            k = np.exp(tempA)
+            
+        elif self.noyau == "lineaire":
+            k = self.x_train@x.T
+            
+        elif self.noyau == "sigmoidal":
+            k = np.tanh(self.b * (self.x_train@x.T) + self.d)
+            
+        else:
+            k = np.power(((self.x_train@x.T) + self.c),self.M)
+        
+        y = k.T@self.a
+        
+        if y > 0.5:
+            return 1
+        else:
+            return 0
 
     def erreur(self, t, prediction):
         """
