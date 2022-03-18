@@ -53,11 +53,11 @@ def main():
     vc = bool(int(sys.argv[5]))
     """
     
-    type_noyau = "sigmoidal"
+    type_noyau = "rbf"
     nb_train = 100
     nb_test = 200
     lin_sep = 0
-    vc = bool(0)   
+    vc = bool(1)   
     
     # On génère les données d'entraînement et de test
     generateur_donnees = gd.GestionDonnees(nb_train, nb_test, lin_sep)

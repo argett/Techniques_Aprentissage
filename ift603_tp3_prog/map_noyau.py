@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import sys
 
 from sklearn.model_selection import GridSearchCV # import ajouté
+from sklearn.model_selection import train_test_split
+from tqdm import tqdm
 import math # import ajouté
 
 class MAPnoyau:
@@ -84,6 +86,8 @@ class MAPnoyau:
         self.a = np.linalg.solve(K + (np.identity(x_train.shape[0]) * self.lamb), np.identity(x_train.shape[0]))@t_train
         
     def prediction(self, x):
+        # TODO : essayer de faire une prediction par ligne directement et non par valeur
+        # mais faut vérifier que cela soir faisable ou compatible avec affichage()
         """
         Retourne la prédiction pour une entrée representée par un tableau
         1D Numpy ``x``.
@@ -143,7 +147,37 @@ class MAPnoyau:
         de 0.000000001 à 2, les valeurs de ``self.c`` de 0 à 5, les valeurs
         de ''self.b'' et ''self.d'' de 0.00001 à 0.01 et ``self.M`` de 2 à 6
         """
-        # AJOUTER CODE ICI
+        meilleur_err = np.inf
+        meilleur_param = -1
+        num_fold = 10
+        
+        if self.noyau == "rbf":
+            for hyper in tqdm(np.linspace(0.000000001, 2,10)):  # On teste plusieurs degrés du polynôme
+                self.sigma_square = hyper
+                sum_error = 0
+
+                for k in range(num_fold):  # K-fold validation
+                    X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2, random_state=k, shuffle=True)
+                    self.entrainement(X_train, y_train)
+                    y_hat = self.prediction(X_val)  # vecteur de prédiction
+                    sum_error += np.sum(self.erreur(y_val, y_hat))
+
+                avg_err_locale = sum_error/(num_fold)  # On regarde la moyenne des erreurs sur le K-fold  
+                if(avg_err_locale < meilleur_err):
+                    meilleur_err = avg_err_locale
+                    meilleur_param = hyper
+
+            self.sigma_square = meilleur_param
+            self.entrainement(x_tab, t_tab)
+            
+        elif self.noyau == "lineaire":
+            parameters = {self.sigma_square:np.linspace(0.000000001, 2,100)}
+            
+        elif self.noyau == "sigmoidal":
+            parameters = {self.sigma_square:np.linspace(0.000000001, 2,100)}
+            
+        else:
+            print("non")
 
     def affichage(self, x_tab, t_tab):
 
