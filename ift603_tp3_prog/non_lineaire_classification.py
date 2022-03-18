@@ -20,9 +20,20 @@ def analyse_erreur(err_train, err_test):
     apprentissage
     """
     #AJOUTER CODE ICI
+    
+"""    
+def analyse_erreur(erreur_test, erreur_apprentissage)#, bruit):
+    if(erreur_apprentissage < bruit and erreur_test > (1+bruit) * erreur_apprentissage): 
+        # On vérifie que l'erreur d'entrainement est petite alors que l'erreur de test est grande
+        print("SUR APPRENTISSAGE")
+
+    elif(erreur_apprentissage >= bruit and erreur_apprentissage >= bruit):
+        # On vérifie que les erreurs de tests et d'entrainement sont grandes.
+        print("SOUS APPRENTISSAGE")
+"""
 
 def main():
-
+    """
     if len(sys.argv) < 6:
         usage = "\n Usage: python non_lineaire_classification.py type_noyau nb_train nb_test lin validation\
         \n\n\t type_noyau: rbf, lineaire, polynomial, sigmoidal\
@@ -37,7 +48,14 @@ def main():
     nb_test = int(sys.argv[3])
     lin_sep = int(sys.argv[4])
     vc = bool(int(sys.argv[5]))
-
+    """
+    
+    type_noyau = "rbf"
+    nb_train = 100
+    nb_test = 200
+    lin_sep = 0
+    vc = bool(0)   
+    
     # On génère les données d'entraînement et de test
     generateur_donnees = gd.GestionDonnees(nb_train, nb_test, lin_sep)
     [x_train, t_train, x_test, t_test] = generateur_donnees.generer_donnees()

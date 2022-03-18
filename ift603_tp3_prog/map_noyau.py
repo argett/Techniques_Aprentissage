@@ -50,7 +50,17 @@ class MAPnoyau:
         l'equation 6.8 du livre de Bishop et garder en mémoire les données
         d'apprentissage dans ``self.x_train``
         """
-        #AJOUTER CODE ICI
+        if self.noyau == "rbf":
+            print("rbf")
+        elif self.noyau == "lineaire":
+            k = x_train.T@x_train
+        elif self.noyau == "sigmoidal":
+            print("sigmoidal")
+        elif self.noyau == "polynomial":
+            print("polynomial")
+        else:
+            print("\nMauvais noyau rentré")
+            break
         
     def prediction(self, x):
         """
