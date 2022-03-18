@@ -53,7 +53,7 @@ def main():
     vc = bool(int(sys.argv[5]))
     """
     
-    type_noyau = "rbf"
+    type_noyau = "sigmoidal"
     nb_train = 100
     nb_test = 200
     lin_sep = 0
@@ -71,11 +71,20 @@ def main():
     else:
         mp.validation_croisee(x_train, t_train)
 
-    # ~= À MODIFIER =~. 
+    # ~= À MODIFIER =~.
+    
     # AJOUTER CODE AFIN DE CALCULER L'ERREUR D'APPRENTISSAGE
     # ET DE VALIDATION EN % DU NOMBRE DE POINTS MAL CLASSES
-    err_train = 50
-    err_test = 50
+    meanErr_train = 0
+    meanErr_test = 0
+    for cpt in range(x_train.shape[0]):
+        meanErr_train += mp.erreur(t_train[cpt], mp.prediction(x_train[cpt]))
+        
+    for cpt in range(x_test.shape[0]):
+        meanErr_test += mp.erreur(t_test[cpt], mp.prediction(x_test[cpt]))
+    
+    err_train = meanErr_train/x_train.shape[0]*100
+    err_test = meanErr_test/x_test.shape[0]*100
 
     print('Erreur train = ', err_train, '%')
     print('Erreur test = ', err_test, '%')
