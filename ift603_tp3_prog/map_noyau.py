@@ -10,6 +10,7 @@ import sys
 
 from sklearn.model_selection import GridSearchCV # import ajouté
 from sklearn.model_selection import train_test_split
+from itertools import product
 from tqdm import tqdm
 import math # import ajouté
 
@@ -148,10 +149,10 @@ class MAPnoyau:
         de ''self.b'' et ''self.d'' de 0.00001 à 0.01 et ``self.M`` de 2 à 6
         """
         meilleur_err = np.inf
-        meilleur_param = -1
         num_fold = 10
         
         if self.noyau == "rbf":
+            meilleur_sigma = -1
             for hyper in tqdm(np.linspace(0.000000001, 2,10)):  # On teste plusieurs degrés du polynôme
                 self.sigma_square = hyper
                 sum_error = 0
@@ -159,25 +160,81 @@ class MAPnoyau:
                 for k in range(num_fold):  # K-fold validation
                     X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2, random_state=k, shuffle=True)
                     self.entrainement(X_train, y_train)
-                    y_hat = self.prediction(X_val)  # vecteur de prédiction
-                    sum_error += np.sum(self.erreur(y_val, y_hat))
+                    
+                    for i in range (X_val.shape[0]):
+                        y_hat = self.prediction(X_val[i])  # vecteur de prédiction
+                        sum_error += np.sum(self.erreur(y_val[i], y_hat))
 
-                avg_err_locale = sum_error/(num_fold)  # On regarde la moyenne des erreurs sur le K-fold  
+                avg_err_locale = sum_error/(num_fold*X_val.shape[0])  # On regarde la moyenne des erreurs sur le K-fold  
                 if(avg_err_locale < meilleur_err):
                     meilleur_err = avg_err_locale
-                    meilleur_param = hyper
-
-            self.sigma_square = meilleur_param
+                    meilleur_sigma = hyper
+            
+            print(meilleur_sigma)
+            self.sigma_square = meilleur_sigma
             self.entrainement(x_tab, t_tab)
             
         elif self.noyau == "lineaire":
-            parameters = {self.sigma_square:np.linspace(0.000000001, 2,100)}
+            # pas de paramètres à tester
+            self.entrainement(x_tab, t_tab)
             
         elif self.noyau == "sigmoidal":
-            parameters = {self.sigma_square:np.linspace(0.000000001, 2,100)}
+            meilleur_B = -1
+            meilleur_D = -1
+            for hyperD in tqdm(np.linspace(0.00001, 0.01, 30)):
+                for hyperB in np.linspace(0.00001, 0.02,10):  # TODO : On teste plusieurs degrés du polynôme ????
+                    self.b = hyperB
+                    self.d = hyperD
+                    sum_error = 0
+    
+                    for k in range(num_fold):  # K-fold validation
+                        X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2, random_state=k, shuffle=True)
+                        self.entrainement(X_train, y_train)
+                        
+                        for i in range (X_val.shape[0]):
+                            y_hat = self.prediction(X_val[i])  # vecteur de prédiction
+                            sum_error += np.sum(self.erreur(y_val[i], y_hat))
+    
+                    avg_err_locale = sum_error/(num_fold*X_val.shape[0])  # On regarde la moyenne des erreurs sur le K-fold  
+                    if(avg_err_locale < meilleur_err):
+                        meilleur_err = avg_err_locale
+                        meilleur_B = hyperB
+                        meilleur_D = hyperD
             
-        else:
-            print("non")
+            print(meilleur_B)
+            print(meilleur_D)
+            self.b = meilleur_B
+            self.d = meilleur_D
+            self.entrainement(x_tab, t_tab)
+            
+        else: # polynomial
+            meilleur_M = -1
+            meilleur_C = -1
+            for hyperM in tqdm(range(2,7)):  # On teste plusieurs degrés du polynôme
+                for hyperC in np.linspace(0, 5, 100):
+                    self.M = hyperM
+                    self.c = hyperC
+                    sum_error = 0
+    
+                    for k in range(num_fold):  # K-fold validation
+                        X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2, random_state=k, shuffle=True)
+                        self.entrainement(X_train, y_train)
+                        
+                        for i in range (X_val.shape[0]):
+                            y_hat = self.prediction(X_val[i])  # vecteur de prédiction
+                            sum_error += np.sum(self.erreur(y_val[i], y_hat))
+    
+                    avg_err_locale = sum_error/(num_fold*X_val.shape[0])  # On regarde la moyenne des erreurs sur le K-fold  
+                    if(avg_err_locale < meilleur_err):
+                        meilleur_err = avg_err_locale
+                        meilleur_M = hyperM
+                        meilleur_C = hyperC
+            
+            print(meilleur_M)
+            print(meilleur_C)
+            self.M = meilleur_M
+            self.c = meilleur_C
+            self.entrainement(x_tab, t_tab)
 
     def affichage(self, x_tab, t_tab):
 
