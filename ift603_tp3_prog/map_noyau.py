@@ -8,11 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from sklearn.model_selection import GridSearchCV # import ajouté
 from sklearn.model_selection import train_test_split
 from itertools import product
 from tqdm import tqdm
-import math # import ajouté
 
 class MAPnoyau:
     def __init__(self, lamb=0.2, sigma_square=1.06, b=1.0, c=0.1, d=1.0, M=2, noyau='rbf'):
@@ -62,12 +60,9 @@ class MAPnoyau:
         if self.noyau == "rbf":
             tempA = np.zeros(shape=(x_train.shape[0],x_train.shape[0]), dtype=float)
             
-            # TODO : optimiser
-            
-            for i in range(x_train.shape[0]):
-                for j in range(x_train.shape[0]):
-                    tempB = x_train[i] - x_train[j]
-                    tempA[i,j] = -(np.square(tempB[0]) + np.square(tempB[1])) / (2 * self.sigma_square)
+            for i,j in product(range(x_train.shape[0]), range(x_train.shape[0])):
+                tempB = x_train[i] - x_train[j]
+                tempA[i,j] = -(np.square(tempB[0]) + np.square(tempB[1])) / (2 * self.sigma_square)
                     
             K = np.exp(tempA)
             
@@ -75,7 +70,7 @@ class MAPnoyau:
             K = x_train@x_train.T
             
         elif self.noyau == "sigmoidal":
-            K = np.tanh(self.b * (x_train@x_train.T) + self.d)
+            K = np.tanh(self.b * x_train@x_train.T + self.d)
             
         elif self.noyau == "polynomial":
             K = np.power(((x_train@x_train.T) + self.c),self.M)
@@ -87,8 +82,6 @@ class MAPnoyau:
         self.a = np.linalg.solve(K + (np.identity(x_train.shape[0]) * self.lamb), np.identity(x_train.shape[0]))@t_train
         
     def prediction(self, x):
-        # TODO : essayer de faire une prediction par ligne directement et non par valeur
-        # mais faut vérifier que cela soir faisable ou compatible avec affichage()
         """
         Retourne la prédiction pour une entrée representée par un tableau
         1D Numpy ``x``.
@@ -105,11 +98,8 @@ class MAPnoyau:
         if self.noyau == "rbf":
             tempA = np.zeros(shape=(self.x_train.shape[0]), dtype=float)
             
-            # TODO : optimiser
-            
-            for i in range(self.x_train.shape[0]):
-                tempB = self.x_train[i] - x
-                tempA[i] = -(np.square(tempB[0]) + np.square(tempB[1])) / (2 * self.sigma_square)
+            tempB = self.x_train[:] - x
+            tempA[:] = -(np.square(tempB[:,0]) + np.square(tempB[:,1])) / (2 * self.sigma_square)
                     
             k = np.exp(tempA)
             
@@ -170,7 +160,6 @@ class MAPnoyau:
                     meilleur_err = avg_err_locale
                     meilleur_sigma = hyper
             
-            print(meilleur_sigma)
             self.sigma_square = meilleur_sigma
             self.entrainement(x_tab, t_tab)
             
@@ -182,7 +171,7 @@ class MAPnoyau:
             meilleur_B = -1
             meilleur_D = -1
             for hyperD in tqdm(np.linspace(0.00001, 0.01, 30)):
-                for hyperB in np.linspace(0.00001, 0.02,10):  # TODO : On teste plusieurs degrés du polynôme ????
+                for hyperB in np.linspace(0.00001, 0.01,10):  # TODO : On teste plusieurs degrés du polynôme ????
                     self.b = hyperB
                     self.d = hyperD
                     sum_error = 0
@@ -230,8 +219,6 @@ class MAPnoyau:
                         meilleur_M = hyperM
                         meilleur_C = hyperC
             
-            print(meilleur_M)
-            print(meilleur_C)
             self.M = meilleur_M
             self.c = meilleur_C
             self.entrainement(x_tab, t_tab)
