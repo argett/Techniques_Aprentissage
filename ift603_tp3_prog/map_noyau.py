@@ -103,15 +103,15 @@ class MAPnoyau:
             k = np.exp(tempA)
 
         elif self.noyau == "lineaire":
-            k = self.x_train@x.T
+            k = self.x_train@x
 
         elif self.noyau == "sigmoidal":
-            k = np.tanh(self.b * (self.x_train@x.T) + self.d)
+            k = np.tanh(self.b * (self.x_train@x) + self.d)
 
         else:
-            k = np.power(((self.x_train@x.T) + self.c), self.M)
+            k = np.power(((self.x_train@x) + self.c), self.M)
 
-        y = k.T@self.a
+        y = k@self.a
 
         if y > 0.5:
             return 1
@@ -136,13 +136,18 @@ class MAPnoyau:
         SUGGESTION: Les valeurs de ``self.sigma_square`` et ``self.lamb`` à explorer vont
         de 0.000000001 à 2, les valeurs de ``self.c`` de 0 à 5, les valeurs
         de ''self.b'' et ''self.d'' de 0.00001 à 0.01 et ``self.M`` de 2 à 6
+
         """
+
+
+
+
         meilleur_err = np.inf
         num_fold = 10
 
         if self.noyau == "rbf":
             meilleur_sigma = -1
-            for hyper in tqdm(np.linspace(0.000000001, 2, 10)):  # On teste plusieurs degrés du polynôme
+            for hyper in tqdm(np.linspace(0.000000001, 2, 10)):  
                 self.sigma_square = hyper
                 sum_error = 0
 
@@ -170,31 +175,39 @@ class MAPnoyau:
         elif self.noyau == "sigmoidal":
             meilleur_B = -1
             meilleur_D = -1
-            for hyperD in tqdm(np.linspace(0.00001, 0.01, 30)):
-                for hyperB in np.linspace(0.00001, 0.01, 10):  # TODO : On teste plusieurs degrés du polynôme ????
-                    self.b = hyperB
-                    self.d = hyperD
-                    sum_error = 0
+            meilleur_lamb = -1
+            for lambda_param in tqdm(np.linspace(0.000000001,2,10)):
+                for hyperD in np.linspace(0.00001, 0.01, 10):
+                    for hyperB in np.linspace(0.00001, 0.01, 10):  
+                        self.b = hyperB
+                        self.d = hyperD
+                        self.lamb = lambda_param
+                        sum_error = 0
 
-                    for k in range(num_fold):  # K-fold validation
-                        X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
-                                                                          random_state=k, shuffle=True)
-                        self.entrainement(X_train, y_train)
+                        for k in range(num_fold):  # K-fold validation
+                            X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
+                                                                            random_state=k, shuffle=True)
+                            self.entrainement(X_train, y_train)
+                            sum_err_locale = 0
+                            for i in range(X_val.shape[0]):
+                                y_hat = self.prediction(X_val[i])  # vecteur de prédiction
+                                sum_err_locale += self.erreur(y_val[i], y_hat)
+                            sum_error+=sum_err_locale
+                            
 
-                        for i in range(X_val.shape[0]):
-                            y_hat = self.prediction(X_val[i])  # vecteur de prédiction
-                            sum_error += np.sum(self.erreur(y_val[i], y_hat))
-
-                    avg_err_locale = sum_error/(num_fold*X_val.shape[0])  # Moyenne des erreurs sur le K-fold
-                    if(avg_err_locale < meilleur_err):
-                        meilleur_err = avg_err_locale
-                        meilleur_B = hyperB
-                        meilleur_D = hyperD
+                        avg_err_locale = sum_error/(num_fold)  # Moyenne des erreurs sur le K-fold
+                        if(avg_err_locale < meilleur_err):
+                            meilleur_err = avg_err_locale
+                            meilleur_B = hyperB
+                            meilleur_D = hyperD
+                            meilleur_lamb = lambda_param
 
             print(meilleur_B)
             print(meilleur_D)
+            print(meilleur_lamb)
             self.b = meilleur_B
             self.d = meilleur_D
+            self.lamb = meilleur_lamb
             self.entrainement(x_tab, t_tab)
 
         else:  # polynomial
