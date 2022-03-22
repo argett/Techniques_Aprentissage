@@ -25,7 +25,6 @@ class GestionDonnees:
             nb_data_1_2 = int(nb_data / 3.0)
             nb_data_2 = nb_data - int(2.0 * nb_data / 3.0)
             
-        np.random.seed(42)
         x_1 = np.random.randn(nb_data_1_2, 2) + np.array([[5, 1]])  # Gaussienne centrée en mu_1_1=[5,1]
         t_1 = np.ones(nb_data_1_2)
         x_2 = np.random.randn(nb_data_1_2, 2) + np.array([[2, 3]])  # Gaussienne centrée en mu_2=[2,3]

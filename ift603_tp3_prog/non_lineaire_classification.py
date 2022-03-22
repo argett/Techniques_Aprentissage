@@ -11,10 +11,9 @@ Exemple:
 
 """
 
-import numpy as np
-import sys
 from map_noyau import MAPnoyau
 import gestion_donnees as gd
+import sys
 
 
 def analyse_erreur(err_train, err_test):
@@ -22,21 +21,18 @@ def analyse_erreur(err_train, err_test):
     Fonction qui affiche un WARNING lorsqu'il y a apparence de sur ou de sous
     apprentissage
     """
-    #AJOUTER CODE ICI
-    
-"""    
-def analyse_erreur(erreur_test, erreur_apprentissage)#, bruit):
-    if(erreur_apprentissage < bruit and erreur_test > (1+bruit) * erreur_apprentissage): 
-        # On vérifie que l'erreur d'entrainement est petite alors que l'erreur de test est grande
+
+    alpha = 1.618  # nombre d'or
+
+    if(alpha*err_train < err_test):
         print("SUR APPRENTISSAGE")
 
-    elif(erreur_apprentissage >= bruit and erreur_apprentissage >= bruit):
-        # On vérifie que les erreurs de tests et d'entrainement sont grandes.
+    if(alpha*err_test < err_train):
         print("SOUS APPRENTISSAGE")
-"""
+
 
 def main():
-    """
+
     if len(sys.argv) < 6:
         usage = "\n Usage: python non_lineaire_classification.py type_noyau nb_train nb_test lin validation\
         \n\n\t type_noyau: rbf, lineaire, polynomial, sigmoidal\
@@ -51,14 +47,7 @@ def main():
     nb_test = int(sys.argv[3])
     lin_sep = int(sys.argv[4])
     vc = bool(int(sys.argv[5]))
-    """
-    
-    type_noyau = "sigmoidal"
-    nb_train = 100
-    nb_test = 50
-    lin_sep = 0
-    vc = bool(0)   
-    
+
     # On génère les données d'entraînement et de test
     generateur_donnees = gd.GestionDonnees(nb_train, nb_test, lin_sep)
     [x_train, t_train, x_test, t_test] = generateur_donnees.generer_donnees()
@@ -71,18 +60,14 @@ def main():
     else:
         mp.validation_croisee(x_train, t_train)
 
-    # ~= À MODIFIER =~.
-    
-    # AJOUTER CODE AFIN DE CALCULER L'ERREUR D'APPRENTISSAGE
-    # ET DE VALIDATION EN % DU NOMBRE DE POINTS MAL CLASSES
     meanErr_train = 0
     meanErr_test = 0
     for cpt in range(x_train.shape[0]):
         meanErr_train += mp.erreur(t_train[cpt], mp.prediction(x_train[cpt]))
-        
+
     for cpt in range(x_test.shape[0]):
         meanErr_test += mp.erreur(t_test[cpt], mp.prediction(x_test[cpt]))
-    
+
     err_train = meanErr_train/x_train.shape[0]*100
     err_test = meanErr_test/x_test.shape[0]*100
 
@@ -92,6 +77,7 @@ def main():
 
     # Affichage
     mp.affichage(x_test, t_test)
+
 
 if __name__ == "__main__":
     main()
