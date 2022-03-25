@@ -23,16 +23,20 @@ def analyse_erreur(err_train, err_test):
     """
 
     alpha = 1.618  # nombre d'or
+    beta = 30
+    gamma = 50
 
-    if(alpha*err_train < err_test):
+    if(alpha*err_train < err_test and err_train < beta):
         print("SUR APPRENTISSAGE")
 
-    if(alpha*err_test < err_train):
+    elif(err_test > gamma and err_train > gamma):
         print("SOUS APPRENTISSAGE")
+
+    else:
+        print("APPRENTISSAGE OK")
 
 
 def main():
-
     if len(sys.argv) < 6:
         usage = "\n Usage: python non_lineaire_classification.py type_noyau nb_train nb_test lin validation\
         \n\n\t type_noyau: rbf, lineaire, polynomial, sigmoidal\

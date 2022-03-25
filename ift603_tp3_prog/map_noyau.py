@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-#####
-# Vos Noms (Vos Matricules) .~= À MODIFIER =~.
+###
+#   Eliott THOMAS         —  21 164 874
+#   Lilian FAVRE GARCIA   —  21 153 421
+#   Tsiory Razafindramisa —  21 145 627
 ###
 
 import numpy as np
@@ -152,13 +154,13 @@ class MAPnoyau:
 
                 for k in range(num_fold):  # K-fold validation
                     X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
-                                                                    random_state=k, shuffle=True)
+                                                                      random_state=k, shuffle=True)
                     self.entrainement(X_train, y_train)
                     sum_err_locale = 0
                     for i in range(X_val.shape[0]):
                         y_hat = self.prediction(X_val[i])  # vecteur de prédiction
                         sum_err_locale += np.sum(self.erreur(y_val[i], y_hat))
-                    sum_error += sum_err_locale    
+                    sum_error += sum_err_locale
 
                 avg_err_locale = sum_error / (num_fold*X_val.shape[0])  # Moyenne des erreurs sur le K-fold
                 if(avg_err_locale < meilleur_err):
@@ -180,7 +182,7 @@ class MAPnoyau:
 
                 for k in range(num_fold):  # K-fold validation
                     X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
-                                                                    random_state=k, shuffle=True)
+                                                                      random_state=k, shuffle=True)
                     self.entrainement(X_train, y_train)
                     sum_err_locale = 0
                     for i in range(X_val.shape[0]):
@@ -200,7 +202,9 @@ class MAPnoyau:
             meilleur_B = -1
             meilleur_D = -1
             meilleur_lamb = -1
-            for lambda_param, hyperD, hyperB in tqdm(product(np.linspace(0.000000001, 2, 10), np.linspace(0.00001, 0.01, 10), np.linspace(0.00001, 0.01, 10))):
+            for lambda_param, hyperD, hyperB in tqdm(product(np.linspace(0.000000001, 2, 10),
+                                                             np.linspace(0.00001, 0.01, 10),
+                                                             np.linspace(0.00001, 0.01, 10))):
                 self.b = hyperB
                 self.d = hyperD
                 self.lamb = lambda_param
@@ -208,14 +212,13 @@ class MAPnoyau:
 
                 for k in range(num_fold):  # K-fold validation
                     X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
-                                                                    random_state=k, shuffle=True)
+                                                                      random_state=k, shuffle=True)
                     self.entrainement(X_train, y_train)
                     sum_err_locale = 0
                     for i in range(X_val.shape[0]):
                         y_hat = self.prediction(X_val[i])  # vecteur de prédiction
                         sum_err_locale += self.erreur(y_val[i], y_hat)
-                    sum_error+=sum_err_locale
-                    
+                    sum_error += sum_err_locale
 
                 avg_err_locale = sum_error/(num_fold)  # Moyenne des erreurs sur le K-fold
                 if(avg_err_locale < meilleur_err):
@@ -224,9 +227,6 @@ class MAPnoyau:
                     meilleur_D = hyperD
                     meilleur_lamb = lambda_param
 
-            print(meilleur_B)
-            print(meilleur_D)
-            print(meilleur_lamb)
             self.b = meilleur_B
             self.d = meilleur_D
             self.lamb = meilleur_lamb
@@ -237,7 +237,9 @@ class MAPnoyau:
             meilleur_C = -1
             meilleur_lamb = -1
 
-            for lambda_param, hyperM, hyperC in tqdm(product(np.linspace(0.000000001, 2, 10), range(2, 7), np.linspace(0, 5, 100))):
+            for lambda_param, hyperM, hyperC in tqdm(product(np.linspace(0.000000001, 2, 10),
+                                                             range(2, 7),
+                                                             np.linspace(0, 5, 100))):
                 self.M = hyperM
                 self.c = hyperC
                 sum_error = 0
@@ -245,7 +247,7 @@ class MAPnoyau:
 
                 for k in range(num_fold):  # K-fold validation
                     X_train, X_val, y_train, y_val = train_test_split(x_tab, t_tab, test_size=0.2,
-                                                                    random_state=k, shuffle=True)
+                                                                      random_state=k, shuffle=True)
                     self.entrainement(X_train, y_train)
                     sum_err_locale = 0
                     for i in range(X_val.shape[0]):
