@@ -107,7 +107,7 @@ class LinearClassifier(object):
         predictions[:,1]/=Sum[:]
         predictions[:,2]/=Sum[:]
 
-        predictions = np.argmax(predictions,axis=1)
+        class_label = np.argmax(predictions,axis=1)
 
 
 
@@ -137,10 +137,30 @@ class LinearClassifier(object):
         loss = 0
         predictions = self.predict(X)
 
-        accu = sum(predictions==y)
+        accu = np.mean(predictions==y)
 
-        loss =
 
+
+        # CrossEntropy 
+        for i in range(len(predictions)):
+            print(i)
+            print(y[i])
+            print(np.log(predictions[i]))
+            loss-=y[i]*np.log(predictions[i])
+            if(np.isnan(loss)):
+
+                """"
+                il faut faire le calcul sur les probas et pas sur les classes donc revoir le argmax a la fin de predict
+                """
+
+                print("break")
+
+
+        # Normalisation
+        loss /= X.shape[0]
+
+        # Regularisation
+        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
 
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
