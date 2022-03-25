@@ -88,6 +88,30 @@ class LinearClassifier(object):
          Returns a class label for each sample (a number between 0 and num_classes-1)
         """
         class_label = np.zeros(X.shape[0])
+
+
+
+
+        column_to_be_added = np.ones(shape=X.shape[0])
+
+        result = np.column_stack((X, column_to_be_added))
+
+
+        predictions = result@self.W   # bias in included   
+
+        # Softmax
+        predictions  =np.exp(predictions)
+        Sum = np.sum(predictions,axis=1)
+
+        predictions[:,0]/=Sum[:]
+        predictions[:,1]/=Sum[:]
+        predictions[:,2]/=Sum[:]
+
+        predictions = np.argmax(predictions,axis=1)
+
+
+
+
         #############################################################################
         # TODO: Return the best class label.                                        #
         #############################################################################
@@ -102,7 +126,7 @@ class LinearClassifier(object):
         Compute average accuracy and cross_entropy for a series of N data points.
         Naive implementation (with loop)
         Inputs:
-        - X: A numpy array of shape (D, N) containing many samples.
+        - X: A numpy array of shape (D, N) ----> (N,D) ? containing many samples.
         - y: A numpy array of shape (N) labels as an integer
         - reg: (float) regularization strength
         Returns a tuple of:
@@ -111,6 +135,13 @@ class LinearClassifier(object):
         """
         accu = 0
         loss = 0
+        predictions = self.predict(X)
+
+        accu = sum(predictions==y)
+
+        loss =
+
+
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
