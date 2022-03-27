@@ -94,10 +94,10 @@ class LinearClassifier(object):
 
         column_to_be_added = np.ones(shape=X.shape[0])
 
-        result = np.column_stack((X, column_to_be_added))
+        X_bias = np.column_stack((X, column_to_be_added))
 
 
-        predictions = result@self.W   # bias in included   
+        predictions = X_bias@self.W   # bias in included   
 
         
         class_label = np.argmax(predictions,axis=1)
@@ -190,9 +190,9 @@ class LinearClassifier(object):
         
 
 
-        result  = np.append(x,1)
+        x_bias  = np.append(x,1)
 
-        predictions = result@self.W   # bias in included   
+        predictions = x_bias@self.W   # bias in included   
 
 
 
@@ -208,9 +208,15 @@ class LinearClassifier(object):
 
         # CrossEntropy 
         for i in range(len(predictions)): # for each class
+            
+            # loss
             tnk = y==i
-
             loss-=tnk*np.log(predictions[i])
+            
+            # gradient
+            err = (predictions[i]-tnk)
+            dwi = np.dot(err,x_bias)
+            dW[:,i] = dwi
 
 
 
