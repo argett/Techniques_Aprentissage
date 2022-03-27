@@ -99,14 +99,7 @@ class LinearClassifier(object):
 
         predictions = result@self.W   # bias in included   
 
-        # Softmax
-        predictions  =np.exp(predictions)
-        Sum = np.sum(predictions,axis=1)
-
-        predictions[:,0]/=Sum[:]
-        predictions[:,1]/=Sum[:]
-        predictions[:,2]/=Sum[:]
-
+        
         class_label = np.argmax(predictions,axis=1)
 
 
@@ -135,33 +128,28 @@ class LinearClassifier(object):
         """
         accu = 0
         loss = 0
-        predictions = self.predict(X)
+        labels = self.predict(X)
 
-        accu = np.mean(predictions==y)
+        accu = np.mean(labels==y)
+
+        print(accu)
 
 
+        # cross entropy
 
-        # CrossEntropy 
-        for i in range(len(predictions)):
-            print(i)
-            print(y[i])
-            print(np.log(predictions[i]))
-            loss-=y[i]*np.log(predictions[i])
-            if(np.isnan(loss)):
+        for i in range(X.shape[0]):
 
-                """"
-                il faut faire le calcul sur les probas et pas sur les classes donc revoir le argmax a la fin de predict
-                """
+            cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
+            loss  +=cross[0]
+            
 
-                print("break")
+
 
 
         # Normalisation
         loss /= X.shape[0]
 
-        # Regularisation
-        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
-
+        
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
@@ -190,6 +178,7 @@ class LinearClassifier(object):
         loss = 0.0
         dW = np.zeros_like(self.W)
 
+
         #############################################################################
         # TODO: Compute the softmax loss and its gradient.                          #
         # Store the loss in loss and the gradient in dW.                            #
@@ -198,6 +187,35 @@ class LinearClassifier(object):
         # 3- Dont forget the regularization!                                        #
         # 4- Compute gradient => eq.(4.109)                                         #
         #############################################################################
+        
+
+
+        result  = np.append(x,1)
+
+        predictions = result@self.W   # bias in included   
+
+
+
+        
+        # Softmax
+        predictions  =np.exp(predictions)
+        Sum = np.sum(predictions)
+
+        predictions[0]/=Sum
+        predictions[1]/=Sum
+        predictions[2]/=Sum
+
+
+        # CrossEntropy 
+        for i in range(len(predictions)): # for each class
+            tnk = y==i
+
+            loss-=tnk*np.log(predictions[i])
+
+
+
+        # Regularisation
+        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
 
         #############################################################################
         #                          END OF YOUR CODE                                 #
