@@ -135,7 +135,9 @@ class LinearClassifier(object):
          car predict() n'a pas accès à la variable reg.)
         """
         X_bias = augment(X)
-        X_bias[:,-1] *= reg
+        #X_bias[:,-1] *= reg
+        # on applique la régularisation dans la prédiction
+
         labels = self.predict(X_bias)
         
         accu = np.mean(labels==y)
@@ -144,7 +146,7 @@ class LinearClassifier(object):
         for i in range(X.shape[0]):
         
             cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
-            loss  +=cross[0]
+            loss += cross[0]
         # Normalisation
         loss /= X.shape[0]
 
@@ -188,9 +190,6 @@ class LinearClassifier(object):
 
         predictions = x@self.W   # bias in included   
 
-
-
-        
         # Softmax
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
@@ -199,23 +198,20 @@ class LinearClassifier(object):
         predictions[1]/=Sum
         predictions[2]/=Sum
 
-
         # CrossEntropy 
         for i in range(len(predictions)): # for each class
             
             # loss
             tnk = y==i
-            loss-=tnk*np.log(predictions[i])
+            loss -= tnk*np.log(predictions[i])
+            # Regularisation
+            loss += 0.5 * reg * np.sum(np.power(self.W, 2))
             
             # gradient
             err = (predictions[i]-tnk)
-            dwi = np.dot(err,x)
+            dwi = np.dot(loss,x) # on a mis loss à la place de err pour tester
             dW[:,i] = dwi
 
-
-
-        # Regularisation
-        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
 
         #############################################################################
         #                          END OF YOUR CODE                                 #
