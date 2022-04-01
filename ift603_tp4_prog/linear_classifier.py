@@ -64,11 +64,15 @@ class LinearClassifier(object):
             sample_idx += 1
             if sample_idx >= len(self.x_train):  # End of epoch
 
+                
                 accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train, l2_reg)
                 accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val, l2_reg)
 
                 loss_train_curve.append(loss_train)
                 loss_val_curve.append(loss_val)
+
+
+                #print(f"accutrain  : {accu_train}")
                 accu_train_curve.append(accu_train)
                 accu_val_curve.append(accu_val)
 
@@ -97,6 +101,14 @@ class LinearClassifier(object):
         # X_bias = np.column_stack((X, column_to_be_added))
 
         Xbias = augment(X)
+        
+
+        """
+        
+        
+        
+        """
+
 
 
         predictions = Xbias@self.W   # bias in included   
@@ -134,9 +146,7 @@ class LinearClassifier(object):
 
         accu = np.mean(labels==y)
 
-
         # cross entropy
-
         for i in range(X.shape[0]):
 
             cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
@@ -201,27 +211,33 @@ class LinearClassifier(object):
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
 
-        predictions[0]/=Sum
-        predictions[1]/=Sum
-        predictions[2]/=Sum
+        predictions[:]/=Sum
+        # for k in range(len(predictions)):
+        #     predictions[k]/=Sum
+        
 
 
         # CrossEntropy 
         for i in range(len(predictions)): # for each class
             
             # loss
-            tnk = y==i
+            tnk = int(y==i)
             loss-=tnk*np.log(predictions[i])
             
+            # Regularisation
+
+            loss += 0.5 * reg * np.sum(np.power(self.W, 2))
+
             # gradient
             err = (predictions[i]-tnk)
-            dwi = np.dot(err,x)
+
+            dwi  = np.dot(x, err)
+            #dwi = np.dot(err,x)
             dW[:,i] = dwi
 
 
 
-        # Regularisation
-        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
+        
 
         #############################################################################
         #                          END OF YOUR CODE                                 #
