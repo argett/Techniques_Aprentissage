@@ -91,9 +91,11 @@ class TwoLayerClassifier(object):
             
             x_inter = self.net.forward(x)
 
-            x_inter2 = self.net.forward(x_inter)
+            #x_inter2 = self.net.forward(x_inter)
 
-            class_label = np.argmax(x_inter2,axis=1)
+            class_label = np.argmax(x_inter,axis=1)
+
+            print("shape 1")
             
             
             return class_label
@@ -109,10 +111,13 @@ class TwoLayerClassifier(object):
 
             x_inter = self.net.forward(x)
 
-            x_inter2 = self.net.forward(x_inter)
+            #x_inter2 = self.net.forward(x_inter)
 
-            class_label = np.argmax(x_inter2,axis=1)
+            class_label = np.argmax(x_inter,axis=1)
             
+            print("shape 2")
+
+
             
             return class_label
             #############################################################################
@@ -243,7 +248,11 @@ class TwoLayerNet(object):
         - gradient with respect to score; an array of same shape of scores
         """
 
-        loss = 999.9
+        # if(scores[-1]!=1):
+        #     scores  = self.net.augment(scores)
+
+        loss =  999.9  
+        """ strage value should be 0 ?"""
         dloss_dscores = np.zeros(np.size(scores))
 
         #############################################################################
@@ -265,8 +274,8 @@ class TwoLayerNet(object):
         for i in range(len(sfm)): # for each class
             
             # loss
-            tnk = int(y==i)
-            loss-=tnk*np.log(sfm[i])
+            yi = int(y==i)
+            loss-=yi*np.log(sfm[i])
             
             # Regularisation
 
@@ -274,11 +283,17 @@ class TwoLayerNet(object):
             loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2))
 
             # gradient
-            err = (sfm[i]-tnk)
+            err = (sfm[i]-yi)
 
+            dwi  = np.dot(scores[i], err)
+            dloss_dscores[i] = dwi
+
+            """
             dwi  = np.dot(scores, err)
             #dwi = np.dot(err,x)
             dloss_dscores[:,i] = dwi
+            """
+            
 
         
 
@@ -326,6 +341,7 @@ class DenseLayer(object):
         Returns a tuple of:
         - f: a floating point value
         """
+        x_prev = x
         x = augment(x)
         #############################################################################
         # TODO: Compute forward pass.  Do not forget to add 1 to x in case of bias  #
@@ -344,7 +360,7 @@ class DenseLayer(object):
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        self.last_x = x
+        self.last_x = x_prev
         self.last_activ = f
 
         return f
@@ -385,6 +401,7 @@ def reLU(x):
         return x if x>0 else 0
     else:
         for i in range(x.shape[0]):
-            if x[i]<0:
-                x[i]=0 
-
+            for j in range(x.shape[1]):
+                if x[i,j]<0:
+                    x[i,j]=0
+        return x
