@@ -91,13 +91,13 @@ class LinearClassifier(object):
 
          Returns a class label for each sample (a number between 0 and num_classes-1)
         """
+        #############################################################################
+        # TODO: Return the best class label.                                        #
+        #############################################################################
+
         class_label = np.zeros(X.shape[0])
 
-
-
-
         # column_to_be_added = np.ones(shape=X.shape[0])
-
         # X_bias = np.column_stack((X, column_to_be_added))
 
         Xbias = augment(X)
@@ -108,14 +108,7 @@ class LinearClassifier(object):
 
         
         class_label = np.argmax(predictions,axis=1)
-
-
-
-
-        #############################################################################
-        # TODO: Return the best class label.                                        #
-        #############################################################################
-
+        
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -133,36 +126,46 @@ class LinearClassifier(object):
         - average accuracy as single float
         - average loss as single float
         """
+        #############################################################################
+        # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
+        #############################################################################
+        
         accu = 0
         loss = 0
-        labels = self.predict(X)
+        """
+        TODO : mettre en place une modification de la valeur d' l'accuracy en fonction
+                de la régularisation, qui doit baisser.
+                On a tester de mutliplier la colonne des 1 mais ceela ne change
+                pas le résultat. Peut-être parce que si on modifie tout les 1 
+                pour toutes les lignes de X cela revient au même lorsqu'on compare
+                les classes entre elles.
+                Toujours est-il qu'on doit trouver comment impliquer la reg dans la prediction
+                
+        ('augment(X)' était dans la fonction prédict() mais on l'a déplacé là
+         car predict() n'a pas accès à la variable reg.)
+        """
+        X_bias = augment(X)
+        #X_bias[:,-1] *= reg
+        # on applique la régularisation dans la prédiction
 
+        labels = self.predict(X_bias)
+        
         accu = np.mean(labels==y)
-
+        
         # cross entropy
         for i in range(X.shape[0]):
-
+        
             cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
-            loss  +=cross[0]
-            
-
-
-
-
+            loss += cross[0]
         # Normalisation
         loss /= X.shape[0]
         self.W /= X.shape[0]
         
 
-        
-        #############################################################################
-        # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
-        #############################################################################
-
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        return accu, loss
+        return (accu, loss)
 
     def cross_entropy_loss(self, x, y, reg=0.0):
         """
@@ -199,9 +202,6 @@ class LinearClassifier(object):
 
         predictions = x@self.W   # bias in included   
 
-
-
-        
         # Softmax
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
@@ -212,7 +212,6 @@ class LinearClassifier(object):
         # for k in range(len(predictions)):
         #     predictions[k]/=Sum
         
-
 
         # CrossEntropy 
         for i in range(len(predictions)): # for each class
