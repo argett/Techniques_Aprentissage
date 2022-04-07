@@ -251,8 +251,7 @@ class TwoLayerNet(object):
         # if(scores[-1]!=1):
         #     scores  = self.net.augment(scores)
 
-        loss =  999.9  
-        """ strage value should be 0 ?"""
+        loss = 0 # 999.9
         dloss_dscores = np.zeros(np.size(scores))
 
         #############################################################################
@@ -285,7 +284,7 @@ class TwoLayerNet(object):
             # gradient
             err = (sfm[i]-yi)
 
-            dwi  = np.dot(scores[i], err)
+            dwi  = np.dot((1-scores[i]), 1/(1-err))
             dloss_dscores[i] = dwi
 
             """

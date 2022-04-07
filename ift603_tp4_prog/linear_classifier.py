@@ -101,13 +101,6 @@ class LinearClassifier(object):
         # X_bias = np.column_stack((X, column_to_be_added))
 
         Xbias = augment(X)
-        
-
-        """
-        
-        
-        
-        """
 
 
 
@@ -158,6 +151,8 @@ class LinearClassifier(object):
 
         # Normalisation
         loss /= X.shape[0]
+        self.W /= X.shape[0]
+        
 
         
         #############################################################################
@@ -211,6 +206,8 @@ class LinearClassifier(object):
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
 
+        print(predictions)
+        print(Sum)
         predictions[:]/=Sum
         # for k in range(len(predictions)):
         #     predictions[k]/=Sum
@@ -222,20 +219,20 @@ class LinearClassifier(object):
             
             # loss
             tnk = int(y==i)
-            loss-=tnk*np.log(predictions[i])
+            loss-=tnk*np.log(predictions[i]) 
             
-            # Regularisation
-
-            loss += 0.5 * reg * np.sum(np.power(self.W, 2))
+            
 
             # gradient
-            err = (predictions[i]-tnk)
+            err = (predictions[i]-tnk) 
 
-            dwi  = np.dot(x, err)
+            dwi  = np.dot(x, err) 
             #dwi = np.dot(err,x)
             dW[:,i] = dwi
 
-
+        # Regularisation
+        loss += 0.5 * reg * np.sum(np.power(self.W, 2))
+        dW += reg * np.sum(self.W)
 
         
 
