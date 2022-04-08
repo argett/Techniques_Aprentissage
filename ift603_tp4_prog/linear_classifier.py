@@ -55,7 +55,7 @@ class LinearClassifier(object):
                 x_sample = augment(x_sample)
 
             # Compute loss and gradient of loss
-            loss_train, dW = self.cross_entropy_loss(x_sample, y_sample, l2_reg)
+            loss_train, dW = self.cross_entropy_loss(x_sample, y_sample, reg=l2_reg)
 
             # Take gradient step
             self.W -= lr * dW
@@ -144,7 +144,7 @@ class LinearClassifier(object):
 
         # cross entropy
         for i in range(X.shape[0]):
-            cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
+            cross = self.cross_entropy_loss(X[i], y[i], reg)
             loss += cross[0]
 
         labels = self.predict(X)
@@ -158,7 +158,7 @@ class LinearClassifier(object):
         #                          END OF YOUR CODE                                 #
         #############################################################################
 
-    def cross_entropy_loss(self, x, y, xSize, reg=0.0):
+    def cross_entropy_loss(self, x, y, reg=0.0):
         """
         Cross-entropy loss function for one sample pair (X,y) (with softmax)
         C.f. Eq.(4.104 to 4.109) of Bishop book.
@@ -206,12 +206,13 @@ class LinearClassifier(object):
             # gradient
             err = (predictions[i]-tnk) 
 
-            dwi  = np.dot(x, err) 
-            dW[:,i] = dwi
+            # we apply the regularization to the gradient
+            dW[:,i] =np.dot(x, err) + reg*self.W[:,i]
+            
 
         # Regularisation
         loss += 0.5 * reg * np.sum(np.power(self.W, 2))
-        dW += reg * np.sum(self.W) / 1 # diviser par la taille de X
+        #dW += reg * np.sum(self.W) # feeling de diviser par Xsize (qu'on doi passer en paramètre) ?
 
         return loss, dW
         #############################################################################
