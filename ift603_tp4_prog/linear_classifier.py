@@ -94,7 +94,6 @@ class LinearClassifier(object):
         #############################################################################
         # TODO: Return the best class label.                                        #
         #############################################################################
-
         class_label = np.zeros(X.shape[0])
 
         # column_to_be_added = np.ones(shape=X.shape[0])
@@ -104,13 +103,12 @@ class LinearClassifier(object):
             X =  augment(X)
 
         predictions = X@self.W   # bias in included   
-  
         class_label = np.argmax(predictions,axis=1)
         
+        return class_label
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        return class_label
 
     def global_accuracy_and_cross_entropy_loss(self, X, y, reg=0.0):
         """
@@ -127,9 +125,6 @@ class LinearClassifier(object):
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
-        
-        accu = 0
-        loss = 0
         """
         TODO : mettre en place une modification de la valeur d' l'accuracy en fonction
                 de la régularisation, qui doit baisser.
@@ -142,13 +137,13 @@ class LinearClassifier(object):
         ('augment(X)' était dans la fonction prédict() mais on l'a déplacé là
          car predict() n'a pas accès à la variable reg.)
         """
-        
+        accu = 0
+        loss = 0
         #X_bias[:,-1] *= reg
         # on applique la régularisation dans la prédiction
 
         # cross entropy
         for i in range(X.shape[0]):
-        
             cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
             loss += cross[0]
 
@@ -157,14 +152,13 @@ class LinearClassifier(object):
         
         # Normalisation
         loss /= X.shape[0]
-        
 
+        return (accu, loss)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        return (accu, loss)
 
-    def cross_entropy_loss(self, x, y, reg=0.0):
+    def cross_entropy_loss(self, x, y, xSize, reg=0.0):
         """
         Cross-entropy loss function for one sample pair (X,y) (with softmax)
         C.f. Eq.(4.104 to 4.109) of Bishop book.
@@ -183,7 +177,6 @@ class LinearClassifier(object):
         loss = 0.0
         dW = np.zeros_like(self.W)
 
-
         #############################################################################
         # TODO: Compute the softmax loss and its gradient.                          #
         # Store the loss in loss and the gradient in dW.                            #
@@ -192,7 +185,6 @@ class LinearClassifier(object):
         # 3- Dont forget the regularization!                                        #
         # 4- Compute gradient => eq.(4.109)                                         #
         #############################################################################
-        
 
         if self.bias:
             if x[-1] != 1:
@@ -203,40 +195,28 @@ class LinearClassifier(object):
         # Softmax
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
-
-        # print(predictions)
-        # print(Sum)
         predictions[:]/=Sum
-        # for k in range(len(predictions)):
-        #     predictions[k]/=Sum
-        
 
         # CrossEntropy 
         for i in range(len(predictions)): # for each class
-            
             # loss
             tnk = int(y==i)
             loss-=tnk*np.log(predictions[i]) 
-            
-            
 
             # gradient
             err = (predictions[i]-tnk) 
 
             dwi  = np.dot(x, err) 
-            #dwi = np.dot(err,x)
             dW[:,i] = dwi
 
         # Regularisation
         loss += 0.5 * reg * np.sum(np.power(self.W, 2))
-        dW += reg * np.sum(self.W)
+        dW += reg * np.sum(self.W) / 1 # diviser par la taille de X
 
-        
-
+        return loss, dW
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        return loss, dW
 
 
 def augment(x):
