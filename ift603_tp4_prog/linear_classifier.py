@@ -100,13 +100,11 @@ class LinearClassifier(object):
         # column_to_be_added = np.ones(shape=X.shape[0])
         # X_bias = np.column_stack((X, column_to_be_added))
 
-        Xbias = augment(X)
+        if self.bias:
+            X =  augment(X)
 
-
-
-        predictions = Xbias@self.W   # bias in included   
-
-        
+        predictions = X@self.W   # bias in included   
+  
         class_label = np.argmax(predictions,axis=1)
         
         #############################################################################
@@ -144,22 +142,21 @@ class LinearClassifier(object):
         ('augment(X)' était dans la fonction prédict() mais on l'a déplacé là
          car predict() n'a pas accès à la variable reg.)
         """
-        X_bias = augment(X)
+        
         #X_bias[:,-1] *= reg
         # on applique la régularisation dans la prédiction
 
-        labels = self.predict(X_bias)
-        
-        accu = np.mean(labels==y)
-        
         # cross entropy
         for i in range(X.shape[0]):
         
             cross = self.cross_entropy_loss( X[i], y[i], reg=reg)
             loss += cross[0]
+
+        labels = self.predict(X)
+        accu = np.mean(labels==y)
+        
         # Normalisation
         loss /= X.shape[0]
-        self.W /= X.shape[0]
         
 
         #############################################################################
@@ -197,8 +194,9 @@ class LinearClassifier(object):
         #############################################################################
         
 
-        if(x[-1]!=1):
-            x  = augment(x)
+        if self.bias:
+            if x[-1] != 1:
+                x = augment(x)
 
         predictions = x@self.W   # bias in included   
 
@@ -206,8 +204,8 @@ class LinearClassifier(object):
         predictions  =np.exp(predictions)
         Sum = np.sum(predictions)
 
-        print(predictions)
-        print(Sum)
+        # print(predictions)
+        # print(Sum)
         predictions[:]/=Sum
         # for k in range(len(predictions)):
         #     predictions[k]/=Sum
