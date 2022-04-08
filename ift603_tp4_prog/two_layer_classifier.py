@@ -89,16 +89,16 @@ class TwoLayerClassifier(object):
         #############################################################################
         if len(x.shape) == 1:  # Predict on one sample
             x_inter = self.net.forward(x)
-            class_label = np.argmax(x_inter,axis=1)
-
-            return class_label
+            class_label = np.argmax(x_inter)
 
         elif len(x.shape) == 2:  # Predict on multiple samples
-            x_inter = self.net.forward(x)
-            #x_inter2 = self.net.forward(x_inter)
-            class_label = np.argmax(x_inter,axis=1)
+            x_inter = [self.net.forward(xi) for xi in x]
+            class_label = np.argmax(x_inter, axis=1)
+        
+        else:
+            raise ValueError("x should be a vector or 2D matrix")
             
-            return class_label
+        return class_label
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -115,22 +115,19 @@ class TwoLayerClassifier(object):
         - average accuracy as single float
         - average loss as single float
         """
+        if l2_r > 0:
+            self.net.l2_reg = l2_r
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
-        if l2_r > 0:
-            self.net.l2_reg = l2_r
-
         loss = 0
-        accu = 0
-
-        labels = self.predict(x)
-        accu = np.mean(labels==y)
-
         # cross entropy
         for i in range(x.shape[0]):
-            cross = self.net.cross_entropy_loss( x[i], y[i])
-            loss  +=cross[0]
+            cross = self.net.cross_entropy_loss(x[i], y[i])
+            loss += cross[0]
+        
+        labels = self.predict(x)
+        accu = np.mean(labels==y)
 
         # Normalisation
         loss /= x.shape[0]
@@ -143,11 +140,8 @@ class TwoLayerClassifier(object):
     def momentum_update(self, w, dw, lr, mu):
         """
         Compute momentum as in : http://cs231n.github.io/neural-networks-3/#sgd
-
         In our case, variable v is stored in self.momentum_cache_v_prev.
-
         The resulting w is put in parameter "w" which is passed by reference
-
         Returns nothing
         """
 
@@ -156,7 +150,9 @@ class TwoLayerClassifier(object):
         # TODO: update w with momentum                                              #
         #############################################################################
 
-        v=mu*v_prev - lr*dw 
+        v = mu*v_prev - lr*dw 
+        # we apply the gradient momentum on v
+        w += v
 
         #############################################################################
         #                          END OF YOUR CODE                                 #
@@ -235,26 +231,24 @@ class TwoLayerNet(object):
         #############################################################################
 
         # Softmax
-        sfm  =np.exp(scores)
+        sfm = np.exp(scores)
         Sum = np.sum(sfm)
         sfm[:]/=Sum
 
         # CrossEntropy 
         for i in range(len(sfm)): # for each class
             # loss
-            yi = int(y==i)
-            loss-=yi*np.log(sfm[i])
+            tnk = int(y==i)
+            loss -= tnk*np.log(sfm[i])
             
             # Regularisation
-
-            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer1.W, 2))
-            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2))
+            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer1.W, 2)) / self.in_size
+            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2)) / self.in_size
 
             # gradient
-            err = (sfm[i]-yi)
+            err = sfm[i]-tnk # TODO : AJOUTER LA REGULARISATION ?
 
-            dwi  = np.dot((1-scores[i]), 1/(1-err))
-            dloss_dscores[i] = dwi
+            dloss_dscores[i] = err
 
             """
             dwi  = np.dot(scores, err)
@@ -303,8 +297,8 @@ class DenseLayer(object):
         Returns a tuple of:
         - f: a floating point value
         """
-        x_prev = x
         x = augment(x)
+        x_prev = x
         #############################################################################
         # TODO: Compute forward pass.  Do not forget to add 1 to x in case of bias  #
         # C.f. function augment(x)                                                  #
@@ -315,6 +309,8 @@ class DenseLayer(object):
             dot = sigmoid(dot)
         elif self.activation == 'relu':
             dot = reLU(dot)
+        else:
+            dot = dot
 
         f = dot
 
@@ -359,10 +355,10 @@ def sigmoid(x):
 
 def reLU(x):
     if len(x.shape) == 1:
-        return x if x>0 else 0
+        return np.array([xi if xi > 0 else 0 for xi in x])
     else:
         for i in range(x.shape[0]):
             for j in range(x.shape[1]):
-                if x[i,j]<0:
-                    x[i,j]=0
+                if x[i,j] < 0:
+                    x[i,j] = 0
         return x

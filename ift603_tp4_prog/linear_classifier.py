@@ -125,22 +125,8 @@ class LinearClassifier(object):
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
-        """
-        TODO : mettre en place une modification de la valeur d' l'accuracy en fonction
-                de la régularisation, qui doit baisser.
-                On a tester de mutliplier la colonne des 1 mais ceela ne change
-                pas le résultat. Peut-être parce que si on modifie tout les 1 
-                pour toutes les lignes de X cela revient au même lorsqu'on compare
-                les classes entre elles.
-                Toujours est-il qu'on doit trouver comment impliquer la reg dans la prediction
-                
-        ('augment(X)' était dans la fonction prédict() mais on l'a déplacé là
-         car predict() n'a pas accès à la variable reg.)
-        """
         accu = 0
         loss = 0
-        #X_bias[:,-1] *= reg
-        # on applique la régularisation dans la prédiction
 
         # cross entropy
         for i in range(X.shape[0]):
@@ -212,7 +198,6 @@ class LinearClassifier(object):
 
         # Regularisation
         loss += 0.5 * reg * np.sum(np.power(self.W, 2))
-        #dW += reg * np.sum(self.W) # feeling de diviser par Xsize (qu'on doi passer en paramètre) ?
 
         return loss, dW
         #############################################################################
