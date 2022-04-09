@@ -241,20 +241,20 @@ class TwoLayerNet(object):
             tnk = int(y==i)
             loss -= tnk*np.log(sfm[i])
             
-            # Regularisation
-            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer1.W, 2)) / self.in_size
-            loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2)) / self.in_size
-
+           
             # gradient
             err = sfm[i]-tnk # TODO : AJOUTER LA REGULARISATION ?
 
-            dloss_dscores[i] = err
+            dloss_dscores[i] = err            
 
-            """
-            dwi  = np.dot(scores, err)
-            #dwi = np.dot(err,x)
-            dloss_dscores[:,i] = dwi
-            """
+           
+
+         # Regularisation
+        loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer1.W, 2)) / self.in_size
+        loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2)) / self.in_size
+
+        dloss_dscores += self.l2_reg * np.sum(self.layer1.W) / self.in_size
+        dloss_dscores += self.l2_reg * np.sum(self.layer2.W) / self.in_size
 
         return loss, dloss_dscores
         #############################################################################

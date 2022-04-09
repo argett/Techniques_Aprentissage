@@ -64,7 +64,6 @@ class LinearClassifier(object):
             sample_idx += 1
             if sample_idx >= len(self.x_train):  # End of epoch
 
-                
                 accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train, l2_reg)
                 accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val, l2_reg)
 
@@ -89,7 +88,8 @@ class LinearClassifier(object):
 
          X: A numpy array of shape (D,) containing one or many samples.
 
-         Returns a class label for each sample (a number between 0 and num_classes-1)
+         Returns a class label for each sample (a number between 0 and
+         num_classes-1)
         """
         #############################################################################
         # TODO: Return the best class label.                                        #
@@ -100,11 +100,11 @@ class LinearClassifier(object):
         # X_bias = np.column_stack((X, column_to_be_added))
 
         if self.bias:
-            X =  augment(X)
+            X = augment(X)
 
-        predictions = X@self.W   # bias in included   
-        class_label = np.argmax(predictions,axis=1)
-        
+        predictions = X@self.W   # bias in included
+        class_label = np.argmax(predictions, axis=1)
+
         return class_label
         #############################################################################
         #                          END OF YOUR CODE                                 #
@@ -112,10 +112,12 @@ class LinearClassifier(object):
 
     def global_accuracy_and_cross_entropy_loss(self, X, y, reg=0.0):
         """
-        Compute average accuracy and cross_entropy for a series of N data points.
+        Compute average accuracy and cross_entropy for a series of N data
+        points.
         Naive implementation (with loop)
         Inputs:
-        - X: A numpy array of shape (D, N) ----> (N,D) ? containing many samples.
+        - X: A numpy array of shape (D, N) ----> (N,D) ? containing many
+        samples.
         - y: A numpy array of shape (N) labels as an integer
         - reg: (float) regularization strength
         Returns a tuple of:
@@ -134,8 +136,8 @@ class LinearClassifier(object):
             loss += cross[0]
 
         labels = self.predict(X)
-        accu = np.mean(labels==y)
-        
+        accu = np.mean(labels == y)
+
         # Normalisation
         loss /= X.shape[0]
 
@@ -176,7 +178,7 @@ class LinearClassifier(object):
             if x[-1] != 1:
                 x = augment(x)
 
-        predictions = x@self.W   # bias in included   
+        predictions = x@self.W   # bias in included
 
         # Softmax
         predictions  =np.exp(predictions)
