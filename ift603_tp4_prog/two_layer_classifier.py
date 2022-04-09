@@ -3,17 +3,17 @@ import numpy as np
 
 class TwoLayerClassifier(object):
     def __init__(self, x_train, y_train, x_val, y_val, num_features, num_hidden_neurons, num_classes, activation='relu'):
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_val = x_val
-        self.y_val = y_val
+        self.x_train = x_train  # training data
+        self.y_train = y_train  # training labels
+        self.x_val = x_val  # validation data
+        self.y_val = y_val  # validation labels
 
-        self.num_features = num_features
-        self.num_classes = num_classes
+        self.num_features = num_features  # number of features
+        self.num_classes = num_classes  # number of classes
 
         self.net = TwoLayerNet(num_features, num_hidden_neurons, num_classes, activation)
 
-        self.momentum_cache_v_prev = {}
+        self.momentum_cache_v_prev = {}  # variable v of momentum
 
     def train(self, num_epochs=1, lr=1e-3, l2_reg=1e-4, lr_decay=1.0, momentum=0.0):
         """
@@ -33,45 +33,45 @@ class TwoLayerClassifier(object):
         - validation accuracy for each epoch
         - validation loss for each epoch
         """
-        loss_train_curve = []
-        loss_val_curve = []
-        accu_train_curve = []
-        accu_val_curve = []
+        loss_train_curve = []  # training loss for each epoch
+        loss_val_curve = []  # validation loss for each epoch
+        accu_train_curve = []  # training accuracy for each epoch
+        accu_val_curve = []  # validation accuracy for each epoch
 
-        self.net.reinit()
-        self.net.l2_reg = l2_reg
+        self.net.reinit()  # reinitialize the weights
+        self.net.l2_reg = l2_reg  # set the l2 regularization strength
 
-        self.momentum_cache_v_prev = {id(x): np.zeros_like(x) for x in self.net.parameters}  # variable v of momentum
+        self.momentum_cache_v_prev = {id(x): np.zeros_like(x) for x in self.net.parameters}  # initialize momentum cache
 
-        sample_idx = 0
-        num_iter = num_epochs * len(self.x_train)
+        sample_idx = 0  # sample index
+        num_iter = num_epochs * len(self.x_train)  # number of iterations
         for i in range(num_iter):
             # Take a sample
             x_sample = self.x_train[sample_idx]
-            y_sample = self.y_train[sample_idx]
+            y_sample = self.y_train[sample_idx]  # take the label of the sample
 
             # Forward + Backward
             loss_train = self.net.forward_backward(x_sample, y_sample)
 
             # Take gradient step
-            for w, dw in zip(self.net.parameters, self.net.gradients):
+            for w, dw in zip(self.net.parameters, self.net.gradients):  # update the weights
                 self.momentum_update(w, dw, lr, momentum)
 
             # Advance in data
             sample_idx += 1
             if sample_idx >= len(self.x_train):  # End of epoch
 
-                accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train)
-                accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val)
+                accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train)  # training accuracy and loss
+                accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val)  # validation accuracy and loss
 
-                loss_train_curve.append(loss_train)
-                loss_val_curve.append(loss_val)
-                accu_train_curve.append(accu_train)
-                accu_val_curve.append(accu_val)
+                loss_train_curve.append(loss_train)  # store the training loss
+                loss_val_curve.append(loss_val)  # store the validation loss
+                accu_train_curve.append(accu_train)  # store the training accuracy
+                accu_val_curve.append(accu_val)  # store the validation accuracy
 
-                sample_idx = 0
+                sample_idx = 0  # reset the sample index
 
-                lr *= lr_decay
+                lr *= lr_decay  # decay the learning rate
 
         return loss_train_curve, loss_val_curve, accu_train_curve, accu_val_curve
 
@@ -88,12 +88,12 @@ class TwoLayerClassifier(object):
         # TODO: return the most probable class label for one sample.                #
         #############################################################################
         if len(x.shape) == 1:  # Predict on one sample
-            x_inter = self.net.forward(x)
-            class_label = np.argmax(x_inter)
+            x_inter = self.net.forward(x)  # forward pass
+            class_label = np.argmax(x_inter)  # get the class label
 
         elif len(x.shape) == 2:  # Predict on multiple samples
-            x_inter = [self.net.forward(xi) for xi in x]
-            class_label = np.argmax(x_inter, axis=1)
+            x_inter = [self.net.forward(xi) for xi in x]  # forward pass
+            class_label = np.argmax(x_inter, axis=1)  # get the class label
 
         else:
             raise ValueError("x should be a vector or 2D matrix")
@@ -105,7 +105,8 @@ class TwoLayerClassifier(object):
 
     def global_accuracy_and_cross_entropy_loss(self, x, y, l2_r=-1.0):
         """
-        Compute average accuracy and cross_entropy for a series of N data points.
+        Compute average accuracy and cross_entropy for a series of N data
+        points.
         Naive implementation (with loop)
         Inputs:
         - x: A numpy array of shape (D, N) containing several samples.
@@ -116,18 +117,18 @@ class TwoLayerClassifier(object):
         - average loss as single float
         """
         if l2_r > 0:
-            self.net.l2_reg = l2_r
+            self.net.l2_reg = l2_r  # set the l2 regularization strength
         #############################################################################
         # TODO: Compute the softmax loss & accuracy for a series of samples X,y .   #
         #############################################################################
         loss = 0
         # cross entropy
-        for i in range(x.shape[0]):
-            cross = self.net.cross_entropy_loss(self.net.forward(x[i]), y[i])
-            loss += cross[0]
+        for i in range(x.shape[0]):  # for each sample
+            cross = self.net.cross_entropy_loss(self.net.forward(x[i]), y[i])  # compute the cross entropy loss
+            loss += cross[0]  # add the loss
 
-        labels = self.predict(x)
-        accu = np.mean(labels == y)
+        labels = self.predict(x)  # get the predicted labels
+        accu = np.mean(labels == y)  # compute the accuracy
 
         # Normalisation
         loss /= x.shape[0]
@@ -145,19 +146,20 @@ class TwoLayerClassifier(object):
         Returns nothing
         """
 
-        v_prev = self.momentum_cache_v_prev[id(w)]
+        v_prev = self.momentum_cache_v_prev[id(w)]  # get the previous velocity
         #############################################################################
         # TODO: update w with momentum                                              #
         #############################################################################
 
-        v = mu*v_prev - lr*dw 
+        v = mu*v_prev - lr*dw  # compute the new velocity
         # we apply the gradient momentum on v
-        w += v
+        w += v  # update the weights
 
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
         self.momentum_cache_v_prev[id(w)] = v
+
 
 class TwoLayerNet(object):
     """
@@ -208,18 +210,16 @@ class TwoLayerNet(object):
         C.f. Eq.(4.104 to 4.109) of Bishop book.
 
         Inputs:
-        - scores: output of the network before the softmax.  A numpy array of shape (C) (C is the number of classes).
+        - scores: output of the network before the softmax.  A numpy array of
+        shape (C) (C is the number of classes).
         - y: training label as an integer
         Returns a tuple of:
         - loss as single float
         - gradient with respect to score; an array of same shape of scores
         """
 
-        # if(scores[-1]!=1):
-        #     scores  = self.net.augment(scores)
-
-        loss = 0 # 999.9
-        dloss_dscores = np.zeros(np.size(scores))
+        loss = 0
+        dloss_dscores = np.zeros(np.size(scores))  # initialize the gradient with zeros
 
         #############################################################################
         # TODO: Compute the softmax loss and its gradient.                          #
@@ -233,26 +233,23 @@ class TwoLayerNet(object):
         # Softmax
         sfm = np.exp(scores)
         Sum = np.sum(sfm)
-        sfm[:]/=Sum
+        sfm[:] /= Sum
 
-        # CrossEntropy 
-        for i in range(len(sfm)): # for each class
+        # CrossEntropy
+        for i in range(len(sfm)):  # for each class
             # loss
-            tnk = int(y==i)
-            loss -= tnk*np.log(sfm[i])
-            
-           
+            tnk = int(y == i)  # get the one-hot vector
+            loss -= tnk*np.log(sfm[i])  # compute the cross entropy loss
+
             # gradient
-            err = sfm[i]-tnk # TODO : AJOUTER LA REGULARISATION ?
+            err = sfm[i]-tnk  # compute the error
+            dloss_dscores[i] = err  # compute the gradient
 
-            dloss_dscores[i] = err            
-
-           
-
-         # Regularisation
+        # Regularisation loss
         loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer1.W, 2)) / self.in_size
         loss += 0.5 * self.l2_reg * np.sum(np.power(self.layer2.W, 2)) / self.in_size
 
+        # Regularisation gradient
         dloss_dscores += self.l2_reg * np.sum(self.layer1.W) / self.in_size
         dloss_dscores += self.l2_reg * np.sum(self.layer2.W) / self.in_size
 
@@ -270,8 +267,8 @@ class DenseLayer(object):
         self.activation = activation  # Note, 'relu', or 'sigmoid'
         self.W = None
         self.dW = None
-        self.in_size = in_size # number of input neurons
-        self.out_size = out_size # number of output neurons
+        self.in_size = in_size  # number of input neurons
+        self.out_size = out_size  # number of output neurons
         self.reinit()
 
         self.last_x = None
@@ -297,27 +294,24 @@ class DenseLayer(object):
         Returns a tuple of:
         - f: a floating point value
         """
-        x = augment(x)
-        x_prev = x
+        x = augment(x)  # add the bias term
         #############################################################################
         # TODO: Compute forward pass.  Do not forget to add 1 to x in case of bias  #
         # C.f. function augment(x)                                                  #
         #############################################################################
-
         dot = x@self.W
         if self.activation == 'sigmoid':
             dot = sigmoid(dot)
         elif self.activation == 'relu':
             dot = reLU(dot)
-        else:
+        else:  # no activation function equals linear
             dot = dot
 
         f = dot
-
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
-        self.last_x = x_prev
+        self.last_x = x
         self.last_activ = f
 
         return f
@@ -353,12 +347,13 @@ def augment(x):
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x))
 
+
 def reLU(x):
-    if len(x.shape) == 1:
+    if len(x.shape) == 1:  # if x is a vector
         return np.array([xi if xi > 0 else 0 for xi in x])
-    else:
-        for i in range(x.shape[0]):
-            for j in range(x.shape[1]):
-                if x[i,j] < 0:
-                    x[i,j] = 0
+    else:  # if x is a matrix
+        for i in range(x.shape[0]):  # apply ReLU on each row
+            for j in range(x.shape[1]):  # apply ReLU on each column
+                if x[i, j] < 0:
+                    x[i, j] = 0
         return x

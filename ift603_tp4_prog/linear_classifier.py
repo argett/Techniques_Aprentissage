@@ -30,7 +30,8 @@ class LinearClassifier(object):
         - lr: learning rate
         - l2_reg: the l2 regularization strength
         - lr_decay: learning rate decay.  Typically a value between 0 and 1
-        - init_scale : scale at which the parameters self.W will be randomly initialized
+        - init_scale : scale at which the parameters self.W will be randomly
+        initialized
 
         Returns a tuple for:
         - training accuracy for each epoch
@@ -38,45 +39,42 @@ class LinearClassifier(object):
         - validation accuracy for each epoch
         - validation loss for each epoch
         """
-        loss_train_curve = []
-        loss_val_curve = []
-        accu_train_curve = []
-        accu_val_curve = []
+        loss_train_curve = []  # training loss for each epoch
+        loss_val_curve = []  # validation loss for each epoch
+        accu_train_curve = []  # training accuracy for each epoch
+        accu_val_curve = []  # validation accuracy for each epoch
 
         self.W = self.generate_init_weights(init_scale)  # type: np.ndarray
 
-        sample_idx = 0
-        num_iter = num_epochs * len(self.x_train)
+        sample_idx = 0  # sample index
+        num_iter = num_epochs * len(self.x_train)  # number of iterations
         for i in range(num_iter):
             # Take a sample
             x_sample = self.x_train[sample_idx]
             y_sample = self.y_train[sample_idx]
-            if self.bias:
+            if self.bias:  # augment the sample with a bias
                 x_sample = augment(x_sample)
 
             # Compute loss and gradient of loss
-            loss_train, dW = self.cross_entropy_loss(x_sample, y_sample, reg=l2_reg)
+            loss_train, dW = self.cross_entropy_loss(x_sample, y_sample, reg=l2_reg)  # loss and gradient of loss
 
             # Take gradient step
-            self.W -= lr * dW
+            self.W -= lr * dW  # update the weights
 
             # Advance in data
-            sample_idx += 1
+            sample_idx += 1  # advance in the training set
             if sample_idx >= len(self.x_train):  # End of epoch
-
-                accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train, l2_reg)
-                accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val, l2_reg)
+                accu_train, loss_train = self.global_accuracy_and_cross_entropy_loss(self.x_train, self.y_train, l2_reg)  # compute training accuracy and loss
+                accu_val, loss_val, = self.global_accuracy_and_cross_entropy_loss(self.x_val, self.y_val, l2_reg)  # compute validation accuracy and loss
 
                 loss_train_curve.append(loss_train)
                 loss_val_curve.append(loss_val)
 
-
-                #print(f"accutrain  : {accu_train}")
                 accu_train_curve.append(accu_train)
                 accu_val_curve.append(accu_val)
 
-                sample_idx = 0
-                lr *= lr_decay
+                sample_idx = 0  # restart the sample index
+                lr *= lr_decay  # decay the learning rate
 
         return loss_train_curve, loss_val_curve, accu_train_curve, accu_val_curve
 
@@ -96,10 +94,7 @@ class LinearClassifier(object):
         #############################################################################
         class_label = np.zeros(X.shape[0])
 
-        # column_to_be_added = np.ones(shape=X.shape[0])
-        # X_bias = np.column_stack((X, column_to_be_added))
-
-        if self.bias:
+        if self.bias:  # augment the sample with a bias
             X = augment(X)
 
         predictions = X@self.W   # bias in included
@@ -163,7 +158,7 @@ class LinearClassifier(object):
         """
         # Initialize the loss and gradient to zero.
         loss = 0.0
-        dW = np.zeros_like(self.W)
+        dW = np.zeros_like(self.W)  # initialize the gradient as zero
 
         #############################################################################
         # TODO: Compute the softmax loss and its gradient.                          #
@@ -174,29 +169,28 @@ class LinearClassifier(object):
         # 4- Compute gradient => eq.(4.109)                                         #
         #############################################################################
 
-        if self.bias:
-            if x[-1] != 1:
+        if self.bias:  # augment the sample with a bias
+            if x[-1] != 1:  # if the bias is not already in the sample
                 x = augment(x)
 
         predictions = x@self.W   # bias in included
 
         # Softmax
-        predictions  =np.exp(predictions)
+        predictions = np.exp(predictions)
         Sum = np.sum(predictions)
-        predictions[:]/=Sum
+        predictions[:] /= Sum
 
-        # CrossEntropy 
-        for i in range(len(predictions)): # for each class
+        # CrossEntropy
+        for i in range(len(predictions)):  # for each class
             # loss
-            tnk = int(y==i)
-            loss-=tnk*np.log(predictions[i]) 
+            tnk = int(y == i)  # 1 if y == i, 0 otherwise
+            loss -= tnk*np.log(predictions[i])  # eq.(4.108)
 
             # gradient
-            err = (predictions[i]-tnk) 
+            err = (predictions[i]-tnk)
 
             # we apply the regularization to the gradient
-            dW[:,i] =np.dot(x, err) + reg*self.W[:,i]
-            
+            dW[:, i] = np.dot(x, err) + reg*self.W[:, i]  # eq.(4.109)        
 
         # Regularisation
         loss += 0.5 * reg * np.sum(np.power(self.W, 2))
