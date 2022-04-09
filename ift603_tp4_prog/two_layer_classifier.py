@@ -94,10 +94,10 @@ class TwoLayerClassifier(object):
         elif len(x.shape) == 2:  # Predict on multiple samples
             x_inter = [self.net.forward(xi) for xi in x]
             class_label = np.argmax(x_inter, axis=1)
-        
+
         else:
             raise ValueError("x should be a vector or 2D matrix")
-            
+
         return class_label
         #############################################################################
         #                          END OF YOUR CODE                                 #
@@ -123,11 +123,11 @@ class TwoLayerClassifier(object):
         loss = 0
         # cross entropy
         for i in range(x.shape[0]):
-            cross = self.net.cross_entropy_loss(x[i], y[i])
+            cross = self.net.cross_entropy_loss(self.net.forward(x[i]), y[i])
             loss += cross[0]
-        
+
         labels = self.predict(x)
-        accu = np.mean(labels==y)
+        accu = np.mean(labels == y)
 
         # Normalisation
         loss /= x.shape[0]
